@@ -1,12 +1,29 @@
+#
 Data/
+*.wiki
+
+# Word temporary
+~$*.doc*
+
+# Excel temporary
+~$*.xls*
+
+# PowerPoint temporary
+~$*.ppt*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
+# Mac
+.DS_Store
+
 # C extensions
 *.so
+
+# Databases
+*.db
 
 # Distribution / packaging
 .Python
