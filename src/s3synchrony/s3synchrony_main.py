@@ -35,7 +35,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import s3synchrony
 from s3synchrony.DataPlatforms import baseconn, s3conn
-import py_starter.py_starter as ps
+import py_starter as ps
 
 _supported_platforms = {"S3": s3conn.S3Connection}
 
