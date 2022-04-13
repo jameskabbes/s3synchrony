@@ -30,7 +30,9 @@ import boto3
 import botocore.exceptions
 import pyperclip
 
-from DataPlatforms import baseconn
+import s3synchrony as s3s
+from s3synchrony.DataPlatforms import baseconn
+import py_starter as ps
 
 
 class S3Connection(baseconn.DataPlatformConnection):
@@ -59,7 +61,15 @@ class S3Connection(baseconn.DataPlatformConnection):
     columns = [_file_colname, _editor_colname, _time_colname, _hash_colname]
     dttm_format = "%Y-%m-%d %H:%M:%S"
 
-    def __init__(self, **kwargs):
+    DEFAULT_KWARGS = {
+    'datapath': os.getcwd() + '/Data',
+    'aws_bkt': None,
+    'aws_prfx': None,
+    '_name' : 'NONAME',
+    'credentials': {}
+    }
+
+    def __init__(self, **kwargs ):
         """Initialize all necessary instance variables.
 
         Args:
@@ -70,12 +80,12 @@ class S3Connection(baseconn.DataPlatformConnection):
         Returns:
             None.
         """
+        kwargs = ps.replace_default_kwargs( S3Connection.DEFAULT_KWARGS, **kwargs )
+        for key in kwargs:
+            setattr( self, key, kwargs[key] )
 
         super().__init__()
-        self.datafolder = "Data" if "datafolder" not in kwargs else kwargs["datafolder"]
-        self.aws_bkt = None if "aws_bkt" not in kwargs else kwargs["aws_bkt"]
-        self.aws_prfx = None if "aws_prfx" not in kwargs else kwargs["aws_prfx"]
-        self._s3subdirlocal = self.datafolder + '/' + self._s3id
+        self._s3subdirlocal = self.datapath + '/' + self._s3id
         self._s3subdirremote = self.aws_prfx + '/' + self._s3id + '/'
         self._s3versionspath = self._s3subdirlocal + "/versions.csv"
         self._localversionspath = self._s3subdirlocal + "/versionsLocal.csv"
@@ -90,9 +100,6 @@ class S3Connection(baseconn.DataPlatformConnection):
         self._logname += self._get_randomized_dirname()[10:]
         self._logname = self._logspath + '/' + self._logname + ".txt"
         self._log = ""
-        self._usernamepath = self._s3subdirlocal + "/user_name.txt"
-        self._awscredspath = self._s3subdirlocal + "/aws.txt"
-        self._name = "NONAME"
         self._reset_approved = False
 
     def establish_connection(self):
@@ -121,10 +128,10 @@ class S3Connection(baseconn.DataPlatformConnection):
         """
 
         # Check that the data folder has been created on our local system
-        if(not os.path.exists(self.datafolder)):
-            print("No " + self.datafolder +
+        if(not os.path.exists(self.datapath)):
+            print("No " + self.datapath +
                   " directory present, creating new one...")
-            os.mkdir(self.datafolder)
+            os.mkdir(self.datapath)
             print("Done.\n")
         if(not os.path.exists(self._s3subdirlocal)):
             os.mkdir(self._s3subdirlocal)
@@ -222,7 +229,7 @@ class S3Connection(baseconn.DataPlatformConnection):
             self._s3delpath, self.aws_bkt, self._s3subdirremote + "deletedS3.csv")
 
         # Save a snapshot of our current files into versionsLocal for next time
-        self._compute_directory(self.datafolder).to_csv(
+        self._compute_directory(self.datapath).to_csv(
             self._localversionspath, index=False)
 
         if(self._log == ""):
@@ -300,73 +307,16 @@ class S3Connection(baseconn.DataPlatformConnection):
         else:
             print("Cannot reset remote -- user has not approved.")
 
-    def _import_credentials(self, credentials_path, role_requested):
+    def _import_credentials(self):
+
         """Read the user's credentials from the text file containing them."""
-        with open(credentials_path, 'r') as file:
-            roles = {}
-            for line in file.readlines():
-                line = line.strip()
-                if line[0] == '[' and line[-1] == ']':
-                    role = line[1:-1]
-                    roles[role] = {}
-                elif line == '':
-                    continue
-                else:
-                    key_value_list = line.split('=')
-                    if len(key_value_list) != 1:
-                        for i in range(len(line)):
-                            if line[i] == '=':
-                                key = line[:i].strip()
-                                value = line[(i+1):].strip()
-                                break
-                        roles[role].update({key: value})
-
-        role_dict = {}
-        for role_id in roles:
-            if role_requested in role_id:
-                role_dict = roles[role_id]
-
-        self.credentials = role_dict
         self.resource = boto3.resource("s3", **self.credentials)
         self.client = boto3.client("s3", **self.credentials)
 
     def _connect_to_s3(self):
         """Check for necessary files and attempt to connect with S3 by validating credentials."""
-        if(not os.path.exists(self._usernamepath)):
-            user_name = input("First Time Setup - please type your name: ")
-            if(user_name == ""):
-                user_name = "NONAME"
 
-            with open(self._usernamepath, 'w') as f:
-                f.write(user_name)
-
-        if(not os.path.exists(self._awscredspath)):
-            print("No aws_creds.txt file found, creating one and trying to grab credentials from your clipboard...")
-            with open(self._awscredspath, "w") as f:
-                f.write("")
-            if(self._update_aws_creds(self._awscredspath)):
-                print("Successfully grabbed your AWS credentials from the clipboard.\n")
-            else:
-                print(
-                    "\nFAILED: Please make sure you have your AWS credentials saved to your clipboard.")
-                print(
-                    "Please refer to the documentation if you are unsure how to do this.\n")
-                quit()
-
-        with open(self._usernamepath, 'r') as f:
-            first_name = f.readline()
-        if(first_name == ""):
-            first_name = "NONAME"
-        with open(self._awscredspath, 'r') as f:
-            aws_role = f.readline()
-        if(aws_role == ""):
-            aws_role = "NONE"
-            print("No AWS Role Found.\n")
-        else:
-            aws_role = aws_role[1:-2]
-
-        self._name = first_name
-        self._import_credentials(self._awscredspath, aws_role)
+        self._import_credentials()
 
         print("Checking credentials - attempting S3 connection...")
         try:
@@ -380,30 +330,6 @@ class S3Connection(baseconn.DataPlatformConnection):
                 print(
                     "ERROR: INVALID CREDENTIALS. Are they expired? Attempting to update credentials from clipboard...")
 
-            with open(self._awscredspath, 'w') as f:
-                f.write('')
-            if (self._update_aws_creds(self._awscredspath)):
-                print("\nSUCCESS: AWS Credentials successfully updated from clipboard.")
-                print("Reattempting S3 connection...\n")
-
-                with open(self._awscredspath, 'r') as f:
-                    aws_role = f.readline()
-                if(aws_role == ""):
-                    aws_role = "NONE"
-                    print("No AWS Role Found.\n")
-                else:
-                    aws_role = aws_role[1:-2]
-                    print("Found AWS Role: " + aws_role + "\n")
-
-                try:
-                    self._import_credentials(self._awscredspath, aws_role)
-                    objects = self.client.list_objects(
-                        Bucket=self.aws_bkt, Prefix=self.aws_prfx + '/', Delimiter='/')
-                except Exception as exc:
-                    print("FAILED. Could not connect to S3. Error message:\n")
-                    print(exc)
-                    quit()
-            else:
                 print(
                     "\nFAILED: Please make sure you have your AWS credentials saved to your clipboard.")
                 print(
@@ -427,8 +353,8 @@ class S3Connection(baseconn.DataPlatformConnection):
         versions = self._compute_directory(
             self._tmppath + '/' + randhex, False)
 
-        if(not os.path.exists(self.datafolder)):
-            os.mkdir(self.datafolder)
+        if(not os.path.exists(self.datapath)):
+            os.mkdir(self.datapath)
         if(not os.path.exists(self._s3subdirlocal)):
             os.mkdir(self._s3subdirlocal)
         if(not os.path.exists(self._tmppath)):
@@ -589,14 +515,14 @@ class S3Connection(baseconn.DataPlatformConnection):
             print("Uploading " + file + " to S3...")
             try:
                 self.resource.meta.client.upload_file(
-                    self.datafolder + '/' + file, self.aws_bkt, self.aws_prfx + '/' + file)
+                    self.datapath + '/' + file, self.aws_bkt, self.aws_prfx + '/' + file)
                 successful.append(file)
             except Exception as exc:
                 print("ERROR: Couldn't upload." + file)
                 print(
                     "Please check the error log for more information. Skipping this file.")
                 self._log += "-----------------------------upload_to_s3 error-----------------------------\n"
-                self._log += "File: " + self.datafolder + '/' + file + '\n'
+                self._log += "File: " + self.datapath + '/' + file + '\n'
                 self._log += "S3 Bucket: " + self.aws_bkt + '\n'
                 self._log += "S3 Key: " + self.aws_prfx + '/' + file + "\n\n"
                 self._log += "Line number: " + \
@@ -610,13 +536,13 @@ class S3Connection(baseconn.DataPlatformConnection):
             print("Downloading " + file + " from S3...")
             try:
                 self._download_file(self.aws_bkt, self.aws_prfx + '/' +
-                                    file, self.datafolder + '/' + file)
+                                    file, self.datapath + '/' + file)
             except Exception as exc:
                 print("ERROR: Couldn't download " + file)
                 print(
                     "Please check the error log for more information. Skipping this file.")
                 self._log += "-----------------------------download_from_s3 error-----------------------------\n"
-                self._log += "File: " + self.datafolder + '/' + file + '\n'
+                self._log += "File: " + self.datapath + '/' + file + '\n'
                 self._log += "S3 Bucket: " + self.aws_bkt + '\n'
                 self._log += "S3 Key: " + self.aws_prfx + '/' + file + "\n\n"
                 self._log += "Line number: " + \
@@ -674,14 +600,14 @@ class S3Connection(baseconn.DataPlatformConnection):
         if(inp.lower() in ['y', 'yes']):
             for file in files:
                 try:
-                    os.remove(self.datafolder + '/' + file)
+                    os.remove(self.datapath + '/' + file)
                 except Exception as exc:
                     print("ERROR: Couldn't delete " +
                           file + " from your computer.")
                     print(
                         "Please check the error log for more information. Skipping this file.")
                     self._log += "-----------------------------delete_from_local error-----------------------------\n"
-                    self._log += "File: " + self.datafolder + '/' + file + "\n\n"
+                    self._log += "File: " + self.datapath + '/' + file + "\n\n"
                     self._log += "Line number: " + \
                         str(sys.exc_info()[2].tb_lineno) + '\n'
                     self._log += "Message: " + str(exc) + "\n\n\n"
@@ -724,7 +650,7 @@ class S3Connection(baseconn.DataPlatformConnection):
 
     def _push_modified_s3(self):
         """Update files on S3 with modifications that were made locally more recently."""
-        mine, other, mod_mine, mod_other = self._compute_dfs(self.datafolder)
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
         if(len(mod_mine) > 0):
             print(
                 "UPLOAD: Would you like to update these files on S3 with your local changes?:")
@@ -734,7 +660,7 @@ class S3Connection(baseconn.DataPlatformConnection):
 
     def _revert_modified_s3(self):
         """Revert files on S3 with modifications that were made locally less recently."""
-        mine, other, mod_mine, mod_other = self._compute_dfs(self.datafolder)
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
         if(len(mod_other) > 0):
             print(
                 "UPLOAD: Would you like to revert these files on S3 back to your local versions?:")
@@ -756,7 +682,7 @@ class S3Connection(baseconn.DataPlatformConnection):
 
     def _pull_modified_local(self):
         """Update local files with modifications that were made on S3 more recently."""
-        mine, other, mod_mine, mod_other = self._compute_dfs(self.datafolder)
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
         if(len(mod_other) > 0):
             print(
                 "DOWNLOAD: Would you like to update these local files with the changes from S3?:")
@@ -766,7 +692,7 @@ class S3Connection(baseconn.DataPlatformConnection):
 
     def _revert_modified_local(self):
         """Revert local files with modifications that were made on S3 less recently."""
-        mine, other, mod_mine, mod_other = self._compute_dfs(self.datafolder)
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
         if(len(mod_mine) > 0):
             print(
                 "DOWNLOAD: Would you like to revert these local files back to the versions on S3?:")
@@ -776,7 +702,7 @@ class S3Connection(baseconn.DataPlatformConnection):
 
     def _push_new_s3(self):
         """Upload files to S3 that were created locally."""
-        mine, other, mod_mine, mod_other = self._compute_dfs(self.datafolder)
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
 
         # Find files that are in our directory but not AWS, and load in files deleted from AWS
         new_local = mine.loc[~mine[self._file_colname].isin(
@@ -809,7 +735,7 @@ class S3Connection(baseconn.DataPlatformConnection):
 
     def _push_deleted_s3(self):
         """Remove files from S3 that were deleted locally."""
-        mine, other, mod_mine, mod_other = self._compute_dfs(self.datafolder)
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
 
         # Load in what files we had last time, and what files we have deleted in the past
         oldmine = pd.read_csv(self._localversionspath)
@@ -856,7 +782,7 @@ class S3Connection(baseconn.DataPlatformConnection):
 
     def _pull_new_local(self):
         """Download files from S3 that were created recently."""
-        mine, other, mod_mine, mod_other = self._compute_dfs(self.datafolder)
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
 
         # Find files that are on S3 but not our local system and read in files we have deleted locally
         news3 = other.loc[~other[self._file_colname].isin(
@@ -884,7 +810,7 @@ class S3Connection(baseconn.DataPlatformConnection):
 
     def _pull_deleted_local(self):
         """Remove files from local system that were deleted on S3."""
-        mine, other, mod_mine, mod_other = self._compute_dfs(self.datafolder)
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
 
         # Load in files deleted from S3, and select only those that ARE on our local system and AREN'T on AWS
         deleteds3 = pd.read_csv(self._s3delpath)

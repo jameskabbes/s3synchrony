@@ -33,9 +33,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from DataPlatforms import baseconn
-from DataPlatforms import s3conn
-
+import s3synchrony
+from s3synchrony.DataPlatforms import baseconn, s3conn
+import py_starter.py_starter as ps
 
 _supported_platforms = {"S3": s3conn.S3Connection}
 
@@ -62,6 +62,13 @@ def smart_sync(platform="S3", **kwargs):
     connection.synchronize()
     connection.close_message()
 
+def get_template():
+
+    #list_contents_Paths()
+    module_Paths = s3synchrony.templates_Dir.list_contents_Paths( block_paths=False,block_dirs=True )
+    module_Path = ps.get_selection_from_list( module_Paths )
+    return module_Path.import_module()
+
 
 def reset_all(platform="S3", **kwargs):
     """Reset local and remote directories to original state.
@@ -81,3 +88,18 @@ def reset_all(platform="S3", **kwargs):
         connection.reset_local()
         connection.reset_remote()
     connection.close_message()
+
+
+def run():
+
+    if s3synchrony.json_Path.exists():
+        sync_params = ps.json_to_dict( s3synchrony.json_Path.read() )
+        module = get_template()
+        module.run( sync_params )
+    else:
+        print ('No sync JSON file')
+
+
+if __name__ == '__main__':
+    run()
+

@@ -1,29 +1,31 @@
-# S3Synchrony
+[GitHub Pages](https://jameskabbes.github.io/s3synchrony/)
 
-_Created by Sevan Brodjian for Ameren at the Innovation Center @ UIUC_
+# s3synchrony
+Synchronizing data folders across all team members.
 
-This package provides a service for synchronizing file creations, deletions, and modifications across users on an AWS S3 prefix. Support also exists for easily expanding to other database systems.
-
-## Installation
-
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install s3synchrony.
-
-```bash
-pip install s3synchrony
+# Install
+```
+pip install kabbes_s3synchrony
 ```
 
-## Requirements
+# Usage
 
-S3Synchrony relies on Python 3 and the following packages to operate:
+## s3synchrony.__main__
+To run s3synchrony within a command prompt, perform the following steps:
 
-- hashlib
-- datetime
-- pandas
-- boto3
-- botocore
-- pyperclip
+1. Navigate to the repository you would like to synchronize
+```
+cd C:/Path/to/repo
+```
 
-## Usage
+2. Make sure you have an "s3synchrony.json" file information on how to sync
+
+3. Run the package from the command prompt
+```
+python -m s3synchrony
+```
+
+# Documentation
 
 S3Synchrony comes with three primary functions, which can be called as follows:
 
@@ -124,5 +126,10 @@ Resetting all S3Synchrony services is as simple as deleting the .S3 folders cont
 Before resetting, however, a call to reset_confirm **must** occur. The user will then be prompted to confirm that they would like their .S3 folders removed.
 
 ## License
-
 [GNU GPLv3](https://www.gnu.org/licenses/)
+
+
+# Author(s)
+Sevan Brodjian - UIUC Computer Engineering (Dec '22): Ameren Innovation Center
+
+James Kabbes - Data Scientist: Ameren Innovation Center

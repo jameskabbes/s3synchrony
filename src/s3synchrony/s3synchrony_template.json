@@ -1,0 +1,6 @@
+{
+    "datafolder": "Data",
+    "aws_bkt": "your-aws-bucket",
+    "aws_prfx": "folder/inside/your/bucket",
+    "aws_role_shorthand": "shorthand from your user_profile"
+}
