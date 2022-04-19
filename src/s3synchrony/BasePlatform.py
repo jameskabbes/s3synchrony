@@ -27,7 +27,7 @@ import py_starter as ps
 import dir_ops as do
 from parent_class import ParentClass
 
-class BasePlatformConnection( ParentClass ):
+class BasePlatform( ParentClass ):
 
     """Default class for data platforms.
 
@@ -38,10 +38,13 @@ class BasePlatformConnection( ParentClass ):
     """
 
     DEFAULT_KWARGS = {
-        'local_data_Dir': do.Dir( s3s._cwd_Dir.join( 'Data' ) ),
-        'remote_data_Dir': do.Dir( '' ),
+        'local_data_rel_dir': "Data",
+        'remote_data_dir': "Data",
         '_name' : 'NONAME'
     }
+
+    DEFAULT_KWARGS[ 'data_lDir' ]  = do.Dir( s3s._cwd_Dir.join( DEFAULT_KWARGS['local_data_rel_dir'] ) )
+    DEFAULT_KWARGS[ 'data_rDir' ] = do.Dir( DEFAULT_KWARGS['remote_data_dir'] )
 
     _file_colname = "File"
     _editor_colname = "Edited By"
@@ -55,24 +58,29 @@ class BasePlatformConnection( ParentClass ):
         """Initialize necessary instance variables."""
 
         ParentClass.__init__( self )
-        joined_kwargs = ps.merge_dicts( BasePlatformConnection.DEFAULT_KWARGS, kwargs )
+        joined_kwargs = ps.merge_dicts( BasePlatform.DEFAULT_KWARGS, kwargs )
         self.set_atts( joined_kwargs )
 
-        #
-        self._util_local_Dir =  do.Dir( self.local_data_Dir.join(  self.util_dir ) )
-        self._util_remote_Dir = do.Dir( self.remote_data_Dir.join( self.util_dir ) )
+        #lDir is a local Dir, rDir is a remote dir
+        self._util_lDir =  do.Dir( self.data_lDir.join(  self.util_dir ) )
+        self._util_rDir = do.Dir( self.data_rDir.join( self.util_dir ) )
 
-        self._versions_local_Path =  do.Path( self._util_local_Dir.join(  'versions_local.csv' ) )
-        self._versions_remote_Path = do.Path( self._util_remote_Dir.join( 'versions_remote.csv' ))
+        self._remote_versions_lPath = do.Path( self._util_lDir.join( 'versions_remote.csv' ) )
+        self._local_versions_lPath =  do.Path( self._util_lDir.join( 'versions_local.csv' ) )
 
-        self._deleted_local_Path = do.Path( self.local_data_Dir.join )
+        self._remote_delete_lPath = do.Path( self._util_lDir.join( 'deleted_remote.csv' ) )
+        self._local_delete_lPath = do.Path( self._util_lDir.join( 'deleted_local.csv' ) )
 
+        self._tmp_lDir = do.Dir( self._util_lDir.join('tmp') )
+        self._logs_lDir = do.Dir( self._util_lDir.join('logs') )
+        self._ignore_lPath = do.Path( self._util_lDir.join( 'ignore_remote.txt' ) )
 
-        self._deleted_local_rPath = do.Path( 'deleted_local.csv' )
-        self._deleted_remote_rPath = do.Path( 'deleted_remote.csv' )
-        self._tmp_rDir = do.Dir( 'tmp' )
-        self._logs_rDir = do.Dir(  )
-
+        self._ignore = []
+        self._logname = dt.datetime.now().strftime("%Y_%m_%d_%H_%M_%S_")
+        self._logname += self._get_randomized_dirname()[10:]
+        self._logname = self._logspath + '/' + self._logname + ".txt"
+        self._log = ""
+        self._reset_approved = False
 
     def run( self ):
 

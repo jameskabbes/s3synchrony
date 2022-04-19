@@ -1,6 +1,6 @@
 {
-    "datafolder": "Data",
+    "local_data_rel_dir": "Data",
+    "remote_data_dir": "folder/inside/the/bucket",
     "aws_bkt": "your-aws-bucket",
-    "aws_prfx": "folder/inside/your/bucket",
     "aws_role_shorthand": "shorthand from your user_profile"
 }

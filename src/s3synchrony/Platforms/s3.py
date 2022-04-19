@@ -31,12 +31,13 @@ import botocore.exceptions
 import pyperclip
 
 import s3synchrony as s3s
-from s3synchrony.DataPlatforms.baseconn import BasePlatformConnection
+from s3synchrony import BasePlatform
+
 import py_starter as ps
 import dir_ops as do
 
 
-class S3Connection( BasePlatformConnection ):
+class Platform( s3s.BasePlatform ):
     """Data platform class for synchronizing with AWS S3.
 
     An AWS S3 prefix does not need to be created already for synchronization, nor does
@@ -58,7 +59,6 @@ class S3Connection( BasePlatformConnection ):
 
     DEFAULT_KWARGS = {
     'aws_bkt': None,
-    'aws_prfx': None,
     'credentials': {}
     }
 
@@ -66,17 +66,13 @@ class S3Connection( BasePlatformConnection ):
         """Initialize all necessary instance variables.
 
         Args:
-            datafolder: The name of the local folder used to store data.
             aws_bkt: The name of the S3 bucket where the remote repo will be stored.
-            aws_prfx: The prefix to the S3 location of the remote repo.
 
         Returns:
             None.
         """
-        joined_kwargs = ps.merge_dicts( S3Connection.DEFAULT_KWARGS, kwargs )
-        BasePlatformConnection.__init__( self, **joined_kwargs )
-
-
+        joined_kwargs = ps.merge_dicts( Platform.DEFAULT_KWARGS, kwargs )
+        BasePlatform.__init__( self, **joined_kwargs )
     
 
         self._s3subdirlocal = self.datapath + '/' + self._s3id
