@@ -22,8 +22,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import hashlib
 import datetime as dt
 
+import s3synchrony as s3s
+import py_starter as ps
+import dir_ops as do
+from parent_class import ParentClass
 
-class DataPlatformConnection:
+class BasePlatformConnection( ParentClass ):
+
     """Default class for data platforms.
 
     This class should only be instantiated as a backup case when unrecognized
@@ -32,9 +37,49 @@ class DataPlatformConnection:
     should be overridden by the child classes.
     """
 
+    DEFAULT_KWARGS = {
+        'local_data_Dir': do.Dir( s3s._cwd_Dir.join( 'Data' ) ),
+        'remote_data_Dir': do.Dir( '' ),
+        '_name' : 'NONAME'
+    }
+
+    _file_colname = "File"
+    _editor_colname = "Edited By"
+    _time_colname = "Time Edited"
+    _hash_colname = "Checksum"
+    columns = [_file_colname, _editor_colname, _time_colname, _hash_colname]
+    dttm_format = "%Y-%m-%d %H:%M:%S"
+
+
     def __init__(self, **kwargs):
         """Initialize necessary instance variables."""
-        return
+
+        ParentClass.__init__( self )
+        joined_kwargs = ps.merge_dicts( BasePlatformConnection.DEFAULT_KWARGS, kwargs )
+        self.set_atts( joined_kwargs )
+
+        #
+        self._util_local_Dir =  do.Dir( self.local_data_Dir.join(  self.util_dir ) )
+        self._util_remote_Dir = do.Dir( self.remote_data_Dir.join( self.util_dir ) )
+
+        self._versions_local_Path =  do.Path( self._util_local_Dir.join(  'versions_local.csv' ) )
+        self._versions_remote_Path = do.Path( self._util_remote_Dir.join( 'versions_remote.csv' ))
+
+        self._deleted_local_Path = do.Path( self.local_data_Dir.join )
+
+
+        self._deleted_local_rPath = do.Path( 'deleted_local.csv' )
+        self._deleted_remote_rPath = do.Path( 'deleted_remote.csv' )
+        self._tmp_rDir = do.Dir( 'tmp' )
+        self._logs_rDir = do.Dir(  )
+
+
+    def run( self ):
+
+        self.intro_message()
+        self.establish_connection()
+        self.synchronize()
+        self.close_message()
 
     def intro_message(self):
         """Print an introductory message to signal program start."""
@@ -57,6 +102,27 @@ class DataPlatformConnection:
 
     def synchronize(self):
         """Prompt the user to synchronize all local files with remote files"""
+        
+        # download remote versions
+        # download remote deleted
+
+        # push deleted remote
+        # pull deleted local
+
+        # push new remote
+        # pull new local
+
+        # push modified remote
+        # pull modified local
+
+        # revert modified remote
+        # revert modified local
+
+        # upload local versions to remote
+        # upload local delete paths to remote
+        
+        
+        
         return
 
     def reset_confirm(self):

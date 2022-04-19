@@ -31,11 +31,12 @@ import botocore.exceptions
 import pyperclip
 
 import s3synchrony as s3s
-from s3synchrony.DataPlatforms import baseconn
+from s3synchrony.DataPlatforms.baseconn import BasePlatformConnection
 import py_starter as ps
+import dir_ops as do
 
 
-class S3Connection(baseconn.DataPlatformConnection):
+class S3Connection( BasePlatformConnection ):
     """Data platform class for synchronizing with AWS S3.
 
     An AWS S3 prefix does not need to be created already for synchronization, nor does
@@ -53,19 +54,11 @@ class S3Connection(baseconn.DataPlatformConnection):
     # Different datafolder names for different S3 instances leads to
     # a large number of instance variables.
 
-    _file_colname = "File"
-    _editor_colname = "Edited By"
-    _time_colname = "Time Edited"
-    _hash_colname = "Checksum"
-    _s3id = ".S3"
-    columns = [_file_colname, _editor_colname, _time_colname, _hash_colname]
-    dttm_format = "%Y-%m-%d %H:%M:%S"
+    util_dir = '.S3'
 
     DEFAULT_KWARGS = {
-    'datapath': os.getcwd() + '/Data',
     'aws_bkt': None,
     'aws_prfx': None,
-    '_name' : 'NONAME',
     'credentials': {}
     }
 
@@ -80,11 +73,12 @@ class S3Connection(baseconn.DataPlatformConnection):
         Returns:
             None.
         """
-        kwargs = ps.replace_default_kwargs( S3Connection.DEFAULT_KWARGS, **kwargs )
-        for key in kwargs:
-            setattr( self, key, kwargs[key] )
+        joined_kwargs = ps.merge_dicts( S3Connection.DEFAULT_KWARGS, kwargs )
+        BasePlatformConnection.__init__( self, **joined_kwargs )
 
-        super().__init__()
+
+    
+
         self._s3subdirlocal = self.datapath + '/' + self._s3id
         self._s3subdirremote = self.aws_prfx + '/' + self._s3id + '/'
         self._s3versionspath = self._s3subdirlocal + "/versions.csv"

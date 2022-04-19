@@ -57,10 +57,8 @@ def smart_sync(platform="S3", **kwargs):
     else:
         connection = baseconn.DataPlatformConnection(**kwargs)
 
-    connection.intro_message()
-    connection.establish_connection()
-    connection.synchronize()
-    connection.close_message()
+    connection.run()
+
 
 def get_template():
 
