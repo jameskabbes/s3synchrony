@@ -202,31 +202,22 @@ class BasePlatform( ParentClass ):
             self._log_lPath.remove( override = True )
         
     def reset_confirm(self) -> bool:
-        """Prompt the user to confirm whether a reset can occur.
 
-        Args:
-            None.
+        """Prompt the user to confirm whether a reset can occur."""
 
-        Returns:
-            A boolean containing the user's decision.
+        print('Are you sure you would like to reset the remote data directory?')
+        print('This will not change any of your file contents, but will delete the entire')
+        confirm = input( str(self.util_dir) + ' folder on your local computer and on your AWS prefix: ' + self.aws_prfx + ' (y/n): ')
 
-        Side Effects:
-            Saves the user's decision in a private instance variable to allow a reset later.
-        """
-
-        print("Are you sure you would like to reset the remote data directory?")
-        print("This will not change any of your file contents, but will delete the entire")
-        confirm = input(
-            ".S3 folder on your local computer and on your AWS prefix: " + self.aws_prfx + " (y/n): ")
-
-        if(confirm.lower() not in ['y', "yes"]):
-            print("\nReset aborted.")
+        if confirm.lower() != 'y':
+            print("Reset aborted.")
             self._reset_approved = False
-            return False
+
         self._reset_approved = True
-        return True
+        return self._reset_approved
 
     def reset_local(self):
+
         """Remove all modifications made locally by synchronization."""
 
         if self._reset_approved:
