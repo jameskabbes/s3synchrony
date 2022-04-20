@@ -40,11 +40,10 @@ class BasePlatform( ParentClass ):
     DEFAULT_KWARGS = {
         'local_data_rel_dir': "Data",
         'remote_data_dir': "Data",
+        'data_lDir': None,
+        'data_rDir': None,
         '_name' : 'NONAME'
     }
-
-    DEFAULT_KWARGS[ 'data_lDir' ]  = do.Dir( s3s._cwd_Dir.join( DEFAULT_KWARGS['local_data_rel_dir'] ) )
-    DEFAULT_KWARGS[ 'data_rDir' ] = do.Dir( DEFAULT_KWARGS['remote_data_dir'] )
 
     _file_colname = "File"
     _editor_colname = "Edited By"
@@ -60,6 +59,12 @@ class BasePlatform( ParentClass ):
         ParentClass.__init__( self )
         joined_kwargs = ps.merge_dicts( BasePlatform.DEFAULT_KWARGS, kwargs )
         self.set_atts( joined_kwargs )
+
+        #
+        if not do.Dir.is_Dir( self.data_lDir ):
+            self.data_lDir = do.Dir( s3s._cwd_Dir.join( self.local_data_rel_dir ) )
+        if not do.Dir.is_Dir( self.data_rDir ):
+            self.data_rDir = do.Dir( self.remote_data_dir )
 
         #lDir is a local Dir, rDir is a remote dir
         self._util_lDir =  do.Dir( self.data_lDir.join(  self.util_dir ) )
@@ -89,6 +94,15 @@ class BasePlatform( ParentClass ):
         self.synchronize()
         self.close_message()
 
+    def reset_all( self ):
+
+        self.intro_message()
+        self.establish_connection()
+        if self.reset_confirm():
+            self.reset_local()
+            self.reset_remote()
+        self.close_message()
+
     def intro_message(self):
         """Print an introductory message to signal program start."""
         print()
@@ -106,7 +120,24 @@ class BasePlatform( ParentClass ):
 
     def establish_connection(self):
         """Form a connection to the remote repository."""
-        return
+
+        # Create data dir
+        if not self.data_lDir.exists():
+            self.data_lDir.create() 
+            print ('Directory not present, creating empty directory at: ')
+            print (self.data_lDir)
+
+        # Create platform util local dir
+        if not self._util_lDir.exists():
+            self._util_lDir.create()
+
+        # Create platform util remote dir
+        subfolders = self._connect_to_remote()
+        
+
+    def _connect_to_remote( self ):
+
+        pass
 
     def synchronize(self):
         """Prompt the user to synchronize all local files with remote files"""
