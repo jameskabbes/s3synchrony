@@ -25,6 +25,7 @@ import datetime as dt
 import s3synchrony as s3s
 import py_starter as ps
 import dir_ops as do
+import pandas as pd
 from parent_class import ParentClass
 
 class BasePlatform( ParentClass ):
@@ -60,15 +61,12 @@ class BasePlatform( ParentClass ):
         joined_kwargs = ps.merge_dicts( BasePlatform.DEFAULT_KWARGS, kwargs )
         self.set_atts( joined_kwargs )
 
-        #
+        ###
         if not do.Dir.is_Dir( self.data_lDir ):
             self.data_lDir = do.Dir( s3s._cwd_Dir.join( self.local_data_rel_dir ) )
-        if not do.Dir.is_Dir( self.data_rDir ):
-            self.data_rDir = do.Dir( self.remote_data_dir )
 
         #lDir is a local Dir, rDir is a remote dir
         self._util_lDir =  do.Dir( self.data_lDir.join(  self.util_dir ) )
-        self._util_rDir = do.Dir( self.data_rDir.join( self.util_dir ) )
 
         self._remote_versions_lPath = do.Path( self._util_lDir.join( 'versions_remote.csv' ) )
         self._local_versions_lPath =  do.Path( self._util_lDir.join( 'versions_local.csv' ) )
@@ -81,11 +79,16 @@ class BasePlatform( ParentClass ):
         self._ignore_lPath = do.Path( self._util_lDir.join( 'ignore_remote.txt' ) )
 
         self._ignore = []
-        self._logname = dt.datetime.now().strftime("%Y_%m_%d_%H_%M_%S_")
-        self._logname += self._get_randomized_dirname()[10:]
-        self._logname = self._logspath + '/' + self._logname + ".txt"
+
+        log_filename = dt.datetime.now().strftime("%Y_%m_%d_%H_%M_%S_") + self._get_randomized_dirname()[:10] + '.txt'
+        self._log_lPath = do.Path( self._logs_lDir.join( log_filename ) )
+
         self._log = ""
         self._reset_approved = False
+
+        ### Get remote connection
+        self._get_remote_connection()    
+
 
     def run( self ):
 
@@ -132,8 +135,36 @@ class BasePlatform( ParentClass ):
             self._util_lDir.create()
 
         # Create platform util remote dir
-        subfolders = self._connect_to_remote()
+        subfolders = self.data_rDir.list_subfolders()
         
+        # Check if there is a .S3 subfolder in this S3 bucket/prefix
+        if(self._util_rDir.path not in subfolders):
+            print("This S3 prefix has not been initialized for S3 Synchrony - Initializing prefix and uploading to S3...")
+            self._initialize_util_Dir()
+            print("Done.\n")
+
+        has_local_lPaths =  self._local_versions_lPath.exists() and self._local_delete_lPath.exists()
+        has_remote_lPaths = self._remote_versions_lPath.exists() and self._remote_delete_lPath.exists()
+
+        if(not has_local_lPaths or not has_remote_lPaths):
+            print( "Your data folder has not been initialized for S3 Synchrony - Downloading from S3..." )
+
+            self._download_entire_prefix( self.aws_bkt, self._s3subdirremote, self._s3subdirlocal )
+
+            empty = pd.DataFrame( columns=self.columns )
+            empty.to_csv( self._local_delete_lPath.path,      index=False)
+            empty.to_csv( self._local_versions_lPath.path ,   index=False)
+            
+        self._tmp_lDir.create()
+        self._logs_lDir.create()
+        self._ignore_lPath.create()
+
+        self._ignore = self._ignore_lPath.read().strip().split( '\n' ) #list of lines
+        self.write_log()
+
+    def write_log( self ):
+
+        self._log_lPath.write( string = self._log )
 
     def _connect_to_remote( self ):
 
@@ -142,39 +173,75 @@ class BasePlatform( ParentClass ):
     def synchronize(self):
         """Prompt the user to synchronize all local files with remote files"""
         
-        # download remote versions
-        # download remote deleted
+        self._remote_versions_rPath.download( Path = self._remote_versions_lPath )
+        self._remote_delete_rPath.download( Path = self._remote_delete_lPath )
 
-        # push deleted remote
-        # pull deleted local
+        self._push_deleted_remote()
+        self._pull_deleted_remote()
 
-        # push new remote
-        # pull new local
+        self._push_deleted_remote()
+        self._pull_deleted_local()
 
-        # push modified remote
-        # pull modified local
+        self._push_new_remote()
+        self._pull_new_local()
 
-        # revert modified remote
-        # revert modified local
+        self._push_modified_remote()
+        self._pull_modified_local()
 
-        # upload local versions to remote
-        # upload local delete paths to remote
+        self._revert_modified_remote()
+        self._revert_modified_local()
+
+        self._remote_versions_rPath.upload( Path = self._remote_versions_lPath )
+        self._remote_delete_rPath.upload( Path = self._remote_delete_lPath )
+
+        # Save a snapshot of our current files into versionsLocal for next time
+        self._compute_directory( self.data_lDir.path ).to_csv( self._local_versions_lPath.path, index=False )
+
+        self.write_log()
+        if self._log == '':
+            self._log_lPath.remove( override = True )
         
-        
-        
-        return
+    def reset_confirm(self) -> bool:
+        """Prompt the user to confirm whether a reset can occur.
 
-    def reset_confirm(self):
-        """Prompt the user to reset all local and remote synchronization work."""
-        return
+        Args:
+            None.
+
+        Returns:
+            A boolean containing the user's decision.
+
+        Side Effects:
+            Saves the user's decision in a private instance variable to allow a reset later.
+        """
+
+        print("Are you sure you would like to reset the remote data directory?")
+        print("This will not change any of your file contents, but will delete the entire")
+        confirm = input(
+            ".S3 folder on your local computer and on your AWS prefix: " + self.aws_prfx + " (y/n): ")
+
+        if(confirm.lower() not in ['y', "yes"]):
+            print("\nReset aborted.")
+            self._reset_approved = False
+            return False
+        self._reset_approved = True
+        return True
 
     def reset_local(self):
         """Remove all modifications made locally by synchronization."""
-        return
+
+        if self._reset_approved:
+            self._util_lDir.remove( override = True )
+        else:
+            print("Cannot reset local -- user has not approved.")
+
 
     def reset_remote(self):
         """Remove all modifications made to the remote repo by synchronization."""
-        return
+        
+        if self._reset_approved:
+            self._util_rDir.remove( override = True )
+        else:
+            print("Cannot reset remote -- user has not approved.")
 
     def _get_randomized_dirname(self):
         """Generate a random string to be used as a file name."""

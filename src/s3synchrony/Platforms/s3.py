@@ -29,6 +29,7 @@ import datetime as dt
 import boto3
 import botocore.exceptions
 import pyperclip
+import aws_credentials
 
 import s3synchrony as s3s
 from s3synchrony import BasePlatform
@@ -36,24 +37,11 @@ from s3synchrony import BasePlatform
 import py_starter as ps
 import dir_ops as do
 
+import aws_connections
+import aws_connections.s3 as s3
+
 
 class Platform( s3s.BasePlatform ):
-    """Data platform class for synchronizing with AWS S3.
-
-    An AWS S3 prefix does not need to be created already for synchronization, nor does
-    the local data folder need to be made. The only thing required are your AWS credentials.
-
-    Attributes:
-        columns - A list of the column names used for synchronization.
-        dttm_format - A string for the format being used for all datetime formatting.
-        datafolder - Name of the local datafolder being used to store data.
-        aws_bkt - The AWS bucket name for synchronization.
-        aws_prfx - The AWS prefix which we are synchronizing with.
-    """
-
-    # pylint: disable=too-many-instance-attributes
-    # Different datafolder names for different S3 instances leads to
-    # a large number of instance variables.
 
     util_dir = '.S3'
 
@@ -63,299 +51,40 @@ class Platform( s3s.BasePlatform ):
     }
 
     def __init__(self, **kwargs ):
-        """Initialize all necessary instance variables.
 
-        Args:
-            aws_bkt: The name of the S3 bucket where the remote repo will be stored.
-
-        Returns:
-            None.
-        """
         joined_kwargs = ps.merge_dicts( Platform.DEFAULT_KWARGS, kwargs )
         BasePlatform.__init__( self, **joined_kwargs )
-    
 
-        self._s3subdirlocal = self.datapath + '/' + self._s3id
-        self._s3subdirremote = self.aws_prfx + '/' + self._s3id + '/'
-        self._s3versionspath = self._s3subdirlocal + "/versions.csv"
-        self._localversionspath = self._s3subdirlocal + "/versionsLocal.csv"
-        self._s3delpath = self._s3subdirlocal + "/deletedS3.csv"
-        self._localdelpath = self._s3subdirlocal + "/deletedLocal.csv"
-        self._tmppath = self._s3subdirlocal + "/tmp"
-        self._logspath = self._s3subdirlocal + "/logs"
-        self._ignorepath = self._s3subdirlocal + "/ignores3.txt"
+        if not s3.S3Dir.is_Dir( self.data_rDir ):
+            self.data_rDir = s3.S3Dir( bucket = self.aws_bkt, path = self.remote_data_dir )
 
-        self._ignore = []
-        self._logname = dt.datetime.now().strftime("%Y_%m_%d_%H_%M_%S_")
-        self._logname += self._get_randomized_dirname()[10:]
-        self._logname = self._logspath + '/' + self._logname + ".txt"
-        self._log = ""
-        self._reset_approved = False
+        self._util_rDir = s3.S3Dir( bucket = self.aws_bkt, path = self.data_rDir.join( self.util_dir ) )
+        self._remote_versions_rPath = s3.S3Path( bucket = self.aws_bkt, 
+                                                  path = self._util_rDir.join( self._remote_versions_lPath.filename ) )
+        self._remote_delete_rPath = s3.S3Path( bucket = self.aws_bkt, 
+                                                path = self._util_rDir.join( self._remote_delete_lPath.filename ) )
 
-    def establish_connection(self):
-        """Forms a connection to S3 for synchronization or resetting.
 
-        Currently, the connection is supported only through directly supplying credentials.
-        This is done via the pyperclip library. Through the AWS "Command line or programmatic
-        access" your credentials will be stored to the clipboard, where they are then parsed
-        and loaded by this function.
+    def _get_remote_connection( self ):
 
-        Your credentials will only need to be updated as often as they are changed, and do not
-        need to be stored to the clipboard every time this function is called.
-
-        Args:
-            None.
-
-        Returns:
-            None.
-
-        Side Effects:
-            Credentials will be stored in a local text file, and updated if necessary. An
-            S3 connection is then attempted to be formed.
-
-        Raises:
-            Botocore exceptions can occur for invalid credentials or other connection issues.
-        """
-
-        # Check that the data folder has been created on our local system
-        if(not os.path.exists(self.datapath)):
-            print("No " + self.datapath +
-                  " directory present, creating new one...")
-            os.mkdir(self.datapath)
-            print("Done.\n")
-        if(not os.path.exists(self._s3subdirlocal)):
-            os.mkdir(self._s3subdirlocal)
-
-        subfolders = self._connect_to_s3()
-
-        # Check if there is a .S3 subfolder in this S3 bucket/prefix
-        if(self._s3subdirremote not in subfolders):
-            print("This S3 prefix has not been initialized for S3 Synchrony - Initializing prefix and uploading to S3...")
-            self._initialize_prefix()
-            print("Done.\n")
-
-        # Check if our data folder has all the necessary csvs and subdirectories.
-        # If it doesn't then we need to overwrite the S3 folder with all new info
-        has_local_csvs = (os.path.exists(self._localversionspath)
-                          and os.path.exists(self._localdelpath))
-        has_s3_csvs = (os.path.exists(self._s3versionspath)
-                       and os.path.exists(self._s3delpath))
-        if(not has_local_csvs or not has_s3_csvs):
-            print(
-                "Your data folder has not been initialized for S3 Synchrony - Downloading from S3...")
-            self._download_entire_prefix(
-                self.aws_bkt, self._s3subdirremote, self._s3subdirlocal)
-            empty = pd.DataFrame(columns=self.columns)
-            empty.to_csv(self._localdelpath, index=False)
-            empty.to_csv(self._localversionspath, index=False)
-            print("Done.\n")
-
-        if(not os.path.exists(self._tmppath)):
-            os.mkdir(self._tmppath)
-        if(not os.path.exists(self._logspath)):
-            os.mkdir(self._logspath)
-        if(not os.path.exists(self._ignorepath)):
-            with open(self._ignorepath, 'w') as f:
-                f.write("")
-
-        with open(self._ignorepath) as f:
-            lines = f.readlines()
-            self._ignore = [line.rstrip() for line in lines]
-        with open(self._logname, 'w') as f:
-            f.write("")
-
-    def intro_message(self):
-        """Print an introductory message to signal program start."""
-        print()
-        print("############################")
-        print("#      AWS Smart Sync      #")
-        print("############################")
-        print()
-
-    def close_message(self):
-        """Print a closing message to signal program end."""
-        print()
-        print("############################")
-        print("#       Done Syncing       #")
-        print("############################")
-
-    def synchronize(self):
-        """Synchronize local repository with the S3 prefix.
-
-        The user will be prompted to download or upload all file changes including new files,
-        deletions, and modified files. Modifications are determined via checksums, and additional
-        file information will be printed to help the user.
-
-        Args:
-            None.
-
-        Returns:
-            None.
-
-        Side Effects:
-            Modifies local files and remote files on S3 prefix.
-        """
-
-        self._download_file(self.aws_bkt, self._s3subdirremote +
-                            "versions.csv", self._s3versionspath)
-        self._download_file(
-            self.aws_bkt, self._s3subdirremote + "deletedS3.csv", self._s3delpath)
-
-        self._push_deleted_s3()
-        self._pull_deleted_local()
-
-        self._push_new_s3()
-        self._pull_new_local()
-
-        self._push_modified_s3()
-        self._pull_modified_local()
-
-        self._revert_modified_s3()
-        self._revert_modified_local()
-
-        self.resource.meta.client.upload_file(
-            self._s3versionspath, self.aws_bkt, self._s3subdirremote + "versions.csv")
-        self.resource.meta.client.upload_file(
-            self._s3delpath, self.aws_bkt, self._s3subdirremote + "deletedS3.csv")
-
-        # Save a snapshot of our current files into versionsLocal for next time
-        self._compute_directory(self.datapath).to_csv(
-            self._localversionspath, index=False)
-
-        if(self._log == ""):
-            os.remove(self._logname)
-        else:
-            with open(self._logname, 'w') as f:
-                f.write(self._log)
-
-    def reset_confirm(self):
-        """Prompt the user to confirm whether a reset can occur.
-
-        Args:
-            None.
-
-        Returns:
-            A boolean containing the user's decision.
-
-        Side Effects:
-            Saves the user's decision in a private instance variable to allow a reset later.
-        """
-
-        print("Are you sure you would like to reset S3?")
-        print("This will not change any of your file contents, but will delete the entire")
-        confirm = input(
-            ".S3 folder on your local computer and on your AWS prefix: " + self.aws_prfx + " (y/n): ")
-
-        if(confirm.lower() not in ['y', "yes"]):
-            print("\nReset aborted.")
-            self._reset_approved = False
-            return False
-        self._reset_approved = True
-        return True
-
-    def reset_local(self):
-        """Remove all signs of synchronization from local directory.
-
-        Args:
-            None.
-
-        Returns:
-            None.
-
-        Side Effects:
-            Deletes the .S3 folder within the data folder if the user approved a reset.
-        """
-
-        if self._reset_approved:
-            print("\nDeleting " + self._s3subdirlocal)
-            shutil.rmtree(self._s3subdirlocal)
-            print("Done.")
-        else:
-            print("Cannot reset local -- user has not approved.")
-
-    def reset_remote(self):
-        """Remove all signs of synchronization from remote S3 prefix.
-
-        Args:
-            None.
-
-        Returns:
-            None.
-
-        Side Effects:
-            Deletes the .S3 folder from the S3 prefix if the user approved a reset.
-        """
-
-        if self._reset_approved:
-            print("\nDeleting " + self._s3subdirremote)
-            response = self.client.list_objects_v2(
-                Bucket=self.aws_bkt, Prefix=self._s3subdirremote)
-            for file_dict in response["Contents"]:
-                self.client.delete_object(
-                    Bucket=self.aws_bkt, Key=file_dict["Key"])
-            print("Done.")
-        else:
-            print("Cannot reset remote -- user has not approved.")
-
-    def _import_credentials(self):
-
-        """Read the user's credentials from the text file containing them."""
-        self.resource = boto3.resource("s3", **self.credentials)
-        self.client = boto3.client("s3", **self.credentials)
-
-    def _connect_to_s3(self):
-        """Check for necessary files and attempt to connect with S3 by validating credentials."""
-
-        self._import_credentials()
-
-        print("Checking credentials - attempting S3 connection...")
-        try:
-            objects = self.client.list_objects(
-                Bucket=self.aws_bkt, Prefix=self.aws_prfx + '/', Delimiter='/')
-        except (botocore.exceptions.ClientError, botocore.exceptions.NoCredentialsError) as exc:
-            if("Access Denied" in str(exc)):
-                print(
-                    "ERROR: ACESS DENIED. Do you have the right role? Attempting to update credentials from clipboard...")
-            else:
-                print(
-                    "ERROR: INVALID CREDENTIALS. Are they expired? Attempting to update credentials from clipboard...")
-
-                print(
-                    "\nFAILED: Please make sure you have your AWS credentials saved to your clipboard.")
-                print(
-                    "Please refer to the documentation if you are unsure how to do this.\n")
-                quit()
-
-        subfolders = []
-        try:
-            for prefix in objects.get("CommonPrefixes"):
-                subfolders.append(prefix.get("Prefix"))
-        except:
-            pass
-        print("Successfully connected to S3.\n")
-        return subfolders
-
-    def _initialize_prefix(self):
+        return aws_credentials.Connection( "s3", **self.credentials )
+        subfolders = self.data_rDir.list_subfolders()
+        
+    def _initialize_util_Dir(self):
         """Check for all necessary files on the S3 prefix for synchronization."""
+        
         randhex = self._get_randomized_dirname()
-        self._download_entire_prefix(
-            self.aws_bkt, self.aws_prfx + '/', self._tmppath + '/' + randhex)
-        versions = self._compute_directory(
-            self._tmppath + '/' + randhex, False)
+        download_dir_loc = self._tmp_lDir.join( randhex )
 
-        if(not os.path.exists(self.datapath)):
-            os.mkdir(self.datapath)
-        if(not os.path.exists(self._s3subdirlocal)):
-            os.mkdir(self._s3subdirlocal)
-        if(not os.path.exists(self._tmppath)):
-            os.mkdir(self._tmppath)
-        if(not os.path.exists(self._tmppath + '/' + randhex)):
-            os.mkdir(self._tmppath + '/' + randhex)
+        self.data_rDir.download( path = download_dir_loc )
+        versions = self._compute_directory( download_dir_loc, False )
 
-        versions.to_csv(self._tmppath + '/' +
-                        randhex + "/versions.csv", index=False)
-        empty = pd.DataFrame(
-            columns=self.columns)
+        self.data_lDir.create()
+        self._util_lDir.create()
+
+        versions.to_csv( download_dir_loc + '/' + self._remote_versions_lPath.filename, index = False )
+
+        empty = pd.DataFrame( columns=self.columns )
         empty.to_csv(self._tmppath + '/' +
                      randhex + "/deletedS3.csv", index=False)
 
@@ -363,41 +92,6 @@ class Platform( s3s.BasePlatform ):
             self._tmppath + '/' + randhex + "/versions.csv", self.aws_bkt, self._s3subdirremote + "versions.csv")
         self.resource.meta.client.upload_file(
             self._tmppath + '/' + randhex + "/deletedS3.csv", self.aws_bkt, self._s3subdirremote + "deletedS3.csv")
-
-    def _update_aws_creds(self, aws_creds_path):
-        """Parse credentials from the clipboard and update them in our text file."""
-        new_creds = pyperclip.paste()
-        lines = []
-        for line in new_creds.split('\n'):
-            lines.append(line.strip())
-
-        if len(lines) == 4 and lines[0][0] == '[' and lines[0][-1] == ']':
-            role = lines[0][1:-1]
-
-            existing_creds = []
-            with open(aws_creds_path, 'r') as creds_file:
-                for line in creds_file.readlines():
-                    existing_creds.append(line.strip())
-
-            found_role = False
-            for i in range(len(existing_creds)):
-                if existing_creds[i][1:-1] == role:
-                    found_role = True
-                    for j in range(len(lines)):
-                        existing_creds[i+j] = lines[j]
-
-            # If no role was found add it to the bottom
-            if not found_role:
-                for line in lines:
-                    existing_creds.append(line)
-
-            with open(aws_creds_path, 'w') as creds_file:
-                for line in existing_creds:
-                    creds_file.write(line + '\n')
-
-            return True
-        else:
-            return False
 
     def _download_entire_prefix(self, bucket, prefix, local_path):
         """Download the entire contents of an S3 prefix."""
@@ -432,16 +126,6 @@ class Platform( s3s.BasePlatform ):
         if len(s3_to_download) > 0:
             for s3_file, local_path in s3_to_download.items():
                 self._download_file(bucket, s3_file, local_path)
-
-    def _download_file(self, bucket, s3_file, local_path):
-        """Downloads a singe file from S3 and creates necessary dirs."""
-        dirs = local_path.replace('\\', '/').split('/')[:-1]
-        file_directories = ""
-        for dir in dirs:
-            file_directories += dir + '/'
-            if(not os.path.exists(file_directories)):
-                os.mkdir(file_directories)
-        self.resource.meta.client.download_file(bucket, s3_file, local_path)
 
     def _compute_directory(self, directory, ignoreS3=True):
         """Create a dataframe describing all files in a local directory."""
