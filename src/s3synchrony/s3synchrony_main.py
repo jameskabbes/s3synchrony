@@ -33,34 +33,33 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import s3synchrony
-from s3synchrony.DataPlatforms import baseconn, s3conn
+import s3synchrony as s3s
 import py_starter as ps
 
-_supported_platforms = {"S3": s3conn.S3Connection}
+_supported_platforms = { "s3": s3s.Platforms.s3.Platform }
 
 
 def get_supported_platforms():
     """Return a list of the supported data platforms."""
     return [*_supported_platforms]
 
-
-def smart_sync(platform="S3", **kwargs):
-    """Perform all necessary steps to synchronize a local repository with a remote repo.
-
-    Notes:
-    Keyword arguments are dependent on platform selection.
-    """
+def get_connection( platform, **kwargs ):
 
     if(platform in _supported_platforms):
         connection = _supported_platforms[platform](**kwargs)
-    else:
-        connection = baseconn.DataPlatformConnection(**kwargs)
+        return connection
 
-    connection.intro_message()
-    connection.establish_connection()
-    connection.synchronize()
-    connection.close_message()
+    else:
+        print ('No platform {platform} available'.format( platform = platform ) )
+        return None
+
+
+def smart_sync( platform = "s3", **kwargs):
+
+    """Perform all necessary steps to synchronize a local repository with a remote repo."""
+
+    connection = get_connection( **kwargs )
+    connection.run()
 
 def get_template():
 
@@ -70,25 +69,12 @@ def get_template():
     return module_Path.import_module()
 
 
-def reset_all(platform="S3", **kwargs):
-    """Reset local and remote directories to original state.
+def reset_all( **kwargs ):
 
-    Notes:
-    Keyword arguments are dependent on platform selection.
-    """
+    """Reset local and remote directories to original state."""
 
-    if(platform in _supported_platforms):
-        connection = _supported_platforms[platform](**kwargs)
-    else:
-        connection = baseconn.DataPlatformConnection(**kwargs)
-
-    connection.intro_message()
-    connection.establish_connection()
-    if connection.reset_confirm():
-        connection.reset_local()
-        connection.reset_remote()
-    connection.close_message()
-
+    connection = get_connection( **kwargs )
+    connection.reset_all()
 
 def run():
 

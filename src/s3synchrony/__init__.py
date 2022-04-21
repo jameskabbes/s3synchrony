@@ -8,7 +8,9 @@ _cwd_Dir = do.Dir( do.get_cwd() )
 
 json_Path = do.Path( _cwd_Dir.join( 's3synchrony.json' ) )
 templates_Dir = do.Dir( _Dir.join( 'Templates' ) )
+platforms_Dir = do.Dir( _Dir.join( 'Platforms') )
 
-from . import DataPlatforms
+from . import Platforms
 from . import Templates
+from .BasePlatform import BasePlatform
 from .s3synchrony_main import *
