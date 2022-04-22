@@ -38,6 +38,8 @@ class BasePlatform( ParentClass ):
     should be overridden by the child classes.
     """
 
+    util_dir = '.BASE'
+
     DEFAULT_KWARGS = {
         'local_data_rel_dir': "Data",
         'remote_data_dir': "Data",
@@ -86,6 +88,12 @@ class BasePlatform( ParentClass ):
         self._log = ""
         self._reset_approved = False
 
+        ### These should be defined by the Child Platform
+        self.data_rDir = None
+        self._util_rDir = None
+        self._remote_versions_rPath = None
+        self._remote_delete_rPath = None
+
         ### Get remote connection
         self._get_remote_connection()    
 
@@ -124,7 +132,7 @@ class BasePlatform( ParentClass ):
     def establish_connection(self):
         """Form a connection to the remote repository."""
 
-        # Create data dir
+        # Create local data dir
         if not self.data_lDir.exists():
             self.data_lDir.create() 
             print ('Directory not present, creating empty directory at: ')
@@ -134,13 +142,10 @@ class BasePlatform( ParentClass ):
         if not self._util_lDir.exists():
             self._util_lDir.create()
 
-        # Create platform util remote dir
-        subfolders = self.data_rDir.list_subfolders()
-        
         # Check if there is a .S3 subfolder in this S3 bucket/prefix
-        if(self._util_rDir.path not in subfolders):
+        if not self._util_rDir.exists():
             print("This S3 prefix has not been initialized for S3 Synchrony - Initializing prefix and uploading to S3...")
-            self._initialize_util_Dir()
+            self._initialize_util_rDir()
             print("Done.\n")
 
         has_local_lPaths =  self._local_versions_lPath.exists() and self._local_delete_lPath.exists()
@@ -149,7 +154,7 @@ class BasePlatform( ParentClass ):
         if(not has_local_lPaths or not has_remote_lPaths):
             print( "Your data folder has not been initialized for S3 Synchrony - Downloading from S3..." )
 
-            self._download_entire_prefix( self.aws_bkt, self._s3subdirremote, self._s3subdirlocal )
+            self._util_rDir.download( Destination = self._util_lDir )
 
             empty = pd.DataFrame( columns=self.columns )
             empty.to_csv( self._local_delete_lPath.path,      index=False)
@@ -166,15 +171,39 @@ class BasePlatform( ParentClass ):
 
         self._log_lPath.write( string = self._log )
 
-    def _connect_to_remote( self ):
+    def _get_remote_connection( self ):
 
-        pass
+        self.conn = None
+
+    def _initialize_util_rDir( self ):
+
+        """Check for all necessary files on the S3 prefix for synchronization."""
+        
+        randhex = self._get_randomized_dirname()
+        download_dir_loc = self._tmp_lDir.join( randhex )
+
+        self.data_rDir.download( path = download_dir_loc )
+        versions = self._compute_directory( download_dir_loc, False )
+
+        self.data_lDir.create()
+        self._util_lDir.create()
+
+        versions.to_csv( download_dir_loc + '/' + self._remote_versions_lPath.filename, index = False )
+
+        empty = pd.DataFrame( columns=self.columns )
+        empty.to_csv(self._tmppath + '/' +
+                     randhex + "/deletedS3.csv", index=False)
+
+        self.resource.meta.client.upload_file(
+            self._tmppath + '/' + randhex + "/versions.csv", self.aws_bkt, self._s3subdirremote + "versions.csv")
+        self.resource.meta.client.upload_file(
+            self._tmppath + '/' + randhex + "/deletedS3.csv", self.aws_bkt, self._s3subdirremote + "deletedS3.csv")
 
     def synchronize(self):
         """Prompt the user to synchronize all local files with remote files"""
         
-        self._remote_versions_rPath.download( Path = self._remote_versions_lPath )
-        self._remote_delete_rPath.download( Path = self._remote_delete_lPath )
+        self._remote_versions_rPath.download( Destination = self._remote_versions_lPath )
+        self._remote_delete_rPath.download( Destination = self._remote_delete_lPath )
 
         self._push_deleted_remote()
         self._pull_deleted_remote()
@@ -191,8 +220,8 @@ class BasePlatform( ParentClass ):
         self._revert_modified_remote()
         self._revert_modified_local()
 
-        self._remote_versions_rPath.upload( Path = self._remote_versions_lPath )
-        self._remote_delete_rPath.upload( Path = self._remote_delete_lPath )
+        self._remote_versions_rPath.upload( Destination = self._remote_versions_lPath )
+        self._remote_delete_rPath.upload( Destination = self._remote_delete_lPath )
 
         # Save a snapshot of our current files into versionsLocal for next time
         self._compute_directory( self.data_lDir.path ).to_csv( self._local_versions_lPath.path, index=False )
@@ -200,7 +229,68 @@ class BasePlatform( ParentClass ):
         self.write_log()
         if self._log == '':
             self._log_lPath.remove( override = True )
+
+  
+
+    def _compute_dfs(self, lDir ):
+        """Return a list of dfs containing all the information for smart_sync."""
         
+        mine = self._compute_directory( lDir )
+        other = pd.read_csv( self._remote_versions_lPath.path )
+
+        mine = self._filter_ignore( mine )
+        other = self._filter_ignore( other )
+
+        inboth = mine[ mine[self._file_colname].isin( other[self._file_colname]) ]
+
+        mod_mine = []  # Files more recently modified Locally
+        mod_other = []  # Files more recently modified on S3
+
+        for file in inboth[self._file_colname]:
+            mycs = inboth.loc[inboth[self._file_colname] == file][self._hash_colname].iloc[0]
+            othercs = other.loc[other[self._file_colname] == file][self._hash_colname].iloc[0]
+
+            if(mycs != othercs): # users have pushed conflicting file check sums
+
+                datemine = dt.datetime.strptime(
+                    mine.loc[mine[self._file_colname] == file][self._time_colname].iloc[0], self.dttm_format)
+                dateother = dt.datetime.strptime(
+                    other.loc[other[self._file_colname] == file][self._time_colname].iloc[0], self.dttm_format)
+                if(datemine > dateother):
+                    mod_mine.append([file, datemine, dateother])
+                else:
+                    mod_other.append([file, datemine, dateother])
+
+        return (mine, other, mod_mine, mod_other)
+
+    def _compute_directory(self, lDir, ignore_util=True):
+        """Create a dataframe describing all files in a local directory."""
+
+        df = pd.DataFrame(columns=self.columns)
+
+        folders_to_skip = [ self.util_dir ]
+        if not ignore_util:
+            folders_to_skip = []
+
+        Paths_inst = lDir.walk_contents_Paths( block_dirs=True, block_paths=False, folders_to_skip = folders_to_skip )
+
+        for Path_inst in Paths_inst:
+
+            df_new = pd.DataFrame( columns = self.columns )
+            df_new[ self._file_colname ] = [Path_inst.get_rel( lDir ).path  ]
+            df_new[ self._time_colname ] = Path_inst.get_mtime().strftime( self.dttm_format )
+            df_new[ self._hash_colname ] = self._hash( Path_inst.path )
+            df_new[ self._editor_colname ] = self._name
+
+            df = pd.concat([df, df_new], ignore_index=True)
+
+        return df
+
+    def _filter_ignore(self, df ):
+        """Remove all files that should be ignored as requested by the user."""
+
+        return df.loc[ ~df[self._file_colname].isin( self._ignore ) ]      
+
     def reset_confirm(self) -> bool:
 
         """Prompt the user to confirm whether a reset can occur."""
