@@ -22,11 +22,32 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import hashlib
 import datetime as dt
 
+from click import Path
+
 import s3synchrony as s3s
 import py_starter as ps
 import dir_ops as do
 import pandas as pd
 from parent_class import ParentClass
+import functools
+
+
+
+def data_function( method ):
+
+    @functools.wraps( method )
+    def wrapper( self, Paths_inst ):
+
+        successful_Paths = self.PATHS_CLASS()
+
+        for Path_inst in Paths_inst: 
+            if method( Path_inst ):
+                successful_Paths._add( Path_inst )
+
+        return successful_Paths
+
+    return wrapper
+
 
 class BasePlatform( ParentClass ):
 
@@ -47,6 +68,11 @@ class BasePlatform( ParentClass ):
         'data_rDir': None,
         '_name' : 'NONAME'
     }
+
+    DIR_CLASS = do.Dir
+    DIRS_CLASS = do.Dirs
+    PATH_CLASS = do.Path
+    PATHS_CLASS = do.Paths
 
     _file_colname = "File"
     _editor_colname = "Edited By"
@@ -81,16 +107,12 @@ class BasePlatform( ParentClass ):
         self._ignore_lPath = do.Path( self._util_lDir.join( 'ignore_remote.txt' ) )
 
         self._ignore = []
-
-        log_filename = dt.datetime.now().strftime("%Y_%m_%d_%H_%M_%S_") + self._get_randomized_dirname()[:10] + '.txt'
-        self._log_lPath = do.Path( self._logs_lDir.join( log_filename ) )
-
-        self._log = ""
         self._reset_approved = False
 
         ### These should be defined by the Child Platform
         self.data_rDir = None
         self._util_rDir = None
+        self._util_deleted_rDir = None
         self._remote_versions_rPath = None
         self._remote_delete_rPath = None
 
@@ -165,11 +187,6 @@ class BasePlatform( ParentClass ):
         self._ignore_lPath.create()
 
         self._ignore = self._ignore_lPath.read().strip().split( '\n' ) #list of lines
-        self.write_log()
-
-    def write_log( self ):
-
-        self._log_lPath.write( string = self._log )
 
     def _get_remote_connection( self ):
 
@@ -206,9 +223,6 @@ class BasePlatform( ParentClass ):
         self._remote_delete_rPath.download( Destination = self._remote_delete_lPath )
 
         self._push_deleted_remote()
-        self._pull_deleted_remote()
-
-        self._push_deleted_remote()
         self._pull_deleted_local()
 
         self._push_new_remote()
@@ -230,7 +244,185 @@ class BasePlatform( ParentClass ):
         if self._log == '':
             self._log_lPath.remove( override = True )
 
+    def _push_deleted_remote(self):
+
+        """Remove remote files that were deleted locally."""
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
+
+        # Load in what files we had last time, and what files we have deleted in the past
+        oldmine = pd.read_csv(self._localversionspath)
+        deletedlocal = pd.read_csv(self._localdelpath)
+        # Combine a list of files we have deleted and files we have had in the past, remove any duplicates
+        deletedlocal = pd.concat([oldmine, deletedlocal])
+        deletedlocal = deletedlocal.drop_duplicates(
+            [self._file_colname], keep="last")
+        # From previous files + deleted files select only the ones that AREN'T in our local system but ARE on AWS
+        deletedlocal = deletedlocal[~deletedlocal[self._file_colname].isin(
+            mine[self._file_colname])]
+        deletedlocal = other[other[self._file_colname].isin(
+            deletedlocal[self._file_colname])]
+
+        deletedlocal.to_csv(self._localdelpath, index=False)
+
+        if(len(deletedlocal) > 0):
+            print(
+                "UPLOAD: Would you like to delete these files on S3 that were deleted locally?:")
+            print("('file name' / 'Date last modified on S3')\n")
+            to_delete = []
+            index = 0
+            for i, row in deletedlocal.iterrows():
+                to_delete.append(row[self._file_colname])
+                print(index, row[self._file_colname], '\t',
+                      row[self._time_colname], '\t by', row[self._editor_colname])
+                index += 1
+
+            selecteddelete = self._apply_selected_indices(
+                self._delete_from_s3, to_delete)
+
+            deleteds3 = pd.read_csv(self._s3delpath)
+            newdeleted = other.loc[other[self._file_colname].isin(
+                selecteddelete)]
+            deleteds3 = pd.concat([deleteds3, newdeleted])
+            deleteds3.to_csv(self._s3delpath)
+
+            # Replace any removed file names with N/A and then drop if they have been deleted
+            other[self._file_colname] = other[self._file_colname].where(
+                ~other[self._file_colname].isin(selecteddelete))
+            other = other.dropna()
+            other.to_csv(self._s3versionspath, index=False)
+            print("Done.\n")
   
+    def _pull_deleted_local(self):
+        """Remove files from local system that were deleted on S3."""
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
+
+        # Load in files deleted from S3, and select only those that ARE on our local system and AREN'T on AWS
+        deleteds3 = pd.read_csv(self._s3delpath)
+        deleteds3 = deleteds3[deleteds3[self._file_colname].isin(
+            mine[self._file_colname])]
+        deleteds3 = deleteds3[~deleteds3[self._file_colname].isin(
+            other[self._file_colname])]
+
+        if(len(deleteds3) > 0):
+            print(
+                "DOWNLOAD: Would you like to delete these files from your computer that were deleted on S3?:")
+            print("('file name' / 'Date last modified locally')\n")
+            to_delete = []
+            index = 0
+            for i, row in deleteds3.iterrows():
+                to_delete.append(row[self._file_colname])
+                mask = row[self._file_colname] == mine[self._file_colname]
+                print(index, row[self._file_colname], '\t',
+                      mine.loc[mask][self._file_colname].iloc[0])
+                index += 1
+
+            self._apply_selected_indices(self._delete_from_local, to_delete)
+            print('Done.\n')
+
+    def _push_new_remote(self):
+        """Upload files to S3 that were created locally."""
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
+
+        # Find files that are in our directory but not AWS, and load in files deleted from AWS
+        new_local = mine.loc[~mine[self._file_colname].isin(
+            other[self._file_colname])]
+        deletedfiles = pd.read_csv(self._s3delpath)[
+            self._file_colname].values.tolist()
+
+        if(len(new_local) > 0):
+            print(
+                "UPLOAD: Would you like to upload these new files to S3 that were created locally?:")
+            print("('file name' / 'Date last modified Locally')\n")
+            to_add = []
+            index = 0
+            for i, row in new_local.iterrows():
+                to_add.append(row[self._file_colname])
+                print(index, row[self._file_colname],
+                      '\t', row[self._time_colname], end='\t')
+                if(row[self._file_colname] in deletedfiles):
+                    print("*DELETED ON S3", end='')
+                print()
+                index += 1
+
+            selectedadd = self._apply_selected_indices(
+                self._upload_to_s3, to_add)
+
+            added_to_s3 = mine.loc[mine[self._file_colname].isin(selectedadd)]
+            newversions = pd.concat([other, added_to_s3])
+            newversions.to_csv(self._s3versionspath, index=False)
+            print("Done.\n")
+
+
+
+    def _pull_new_local(self):
+        """Download files from S3 that were created recently."""
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
+
+        # Find files that are on S3 but not our local system and read in files we have deleted locally
+        news3 = other.loc[~other[self._file_colname].isin(
+            mine[self._file_colname])]
+        deletedfiles = pd.read_csv(self._localdelpath)[
+            self._file_colname].values.tolist()
+
+        if(len(news3) > 0):
+            print(
+                "DOWNLOAD: Would you like to download these new files that were created on S3?:")
+            print("('file name' / 'Date last modified on S3')\n")
+            to_download = []
+            index = 0
+            for i, row in news3.iterrows():
+                to_download.append(row[self._file_colname])
+                print(index, row[self._file_colname], '\t', row[self._time_colname],
+                      "\t by", row[self._editor_colname], end='\t')
+                if(row[self._file_colname] in deletedfiles):
+                    print("*DELETED LOCALLY", end='')
+                print()
+                index += 1
+
+            self._apply_selected_indices(self._download_from_s3, to_download)
+            print("Done.\n")
+
+    def _push_modified_remote(self):
+        """Update files on S3 with modifications that were made locally more recently."""
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
+        if(len(mod_mine) > 0):
+            print(
+                "UPLOAD: Would you like to update these files on S3 with your local changes?:")
+            print(
+                "('file name' / 'Date last modified locally' / 'Date last modified on S3')\n")
+            self._push_sequence(mod_mine, mine, other)
+
+    def _pull_modified_local(self):
+        """Update local files with modifications that were made on S3 more recently."""
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
+        if(len(mod_other) > 0):
+            print(
+                "DOWNLOAD: Would you like to update these local files with the changes from S3?:")
+            print(
+                "('file name' / 'Date last modified locally' / 'Date last modified on S3')\n")
+            self._pull_sequence(mod_other, other)
+
+    def _revert_modified_remote(self):
+
+        """Revert remote files with modifications that were made locally less recently."""
+
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
+        if(len(mod_other) > 0):
+            print( "UPLOAD: Would you like to revert these files on S3 back to your local versions?:")
+            print( "('file name' / 'Date last modified locally' / 'Date last modified on S3')\n")
+            self._push_sequence(mod_other, mine, other)
+
+
+    def _revert_modified_local(self):
+        """Revert local files with modifications that were made on S3 less recently."""
+        mine, other, mod_mine, mod_other = self._compute_dfs(self.datapath)
+        if(len(mod_mine) > 0):
+            print(
+                "DOWNLOAD: Would you like to revert these local files back to the versions on S3?:")
+            print(
+                "('file name' / 'Date last modified locally' / 'Date last modified on S3')\n")
+            self._pull_sequence(mod_mine, other)
+
 
     def _compute_dfs(self, lDir ):
         """Return a list of dfs containing all the information for smart_sync."""
@@ -290,6 +482,112 @@ class BasePlatform( ParentClass ):
         """Remove all files that should be ignored as requested by the user."""
 
         return df.loc[ ~df[self._file_colname].isin( self._ignore ) ]      
+
+    @data_function
+    def _upload_to_remote( self, lPath ):
+
+        rel_lPath = lPath.get_rel( self.data_lDir )
+        rPath = self.data_rDir.join_Path( rel_lPath )
+        
+        return rPath.upload( Destination = lPath )
+
+    @data_function
+    def _download_from_remote(self, rPath):
+
+        rel_rPath = rPath.get_rel( self.data_rDir )
+        lPath = self.data_lDir.join_Path( rel_rPath )
+        
+        return rPath.download( Destination = lPath )
+
+    @ps.confirm_wrap('Are you sure you want to delete these files?')
+    @data_function
+    def _delete_from_remote(self, rPaths):
+
+        """Attempt to delete every file provided from the remote S3 prefix."""
+
+        successful_Paths = self.PATHS_CLASS()
+
+        print("Are you sure you want to delete these files from S3?")
+        if ps.confirm_raw():
+
+            for rPath in rPaths:
+                
+                rel_rPath = rPath.get_rel( self.data_rDir ) 
+                deleted_rPath = self._util_deleted_rDir.join_Path( rel_rPath )
+
+                # make a copy of the deleted file into the deleted folder in the util section
+                if rPath.copy( Destination = deleted_rPath, override = True ):
+                    if rPath.delete( override = True ):
+                        successful_Paths._add( rPath )
+
+        return successful_Paths
+
+    @data_function
+    def _delete_from_local(self, lPaths):
+
+        """Attempt to delete every file requested from our local data folder."""
+        
+        print("Are you sure you want to delete these files from your computer?")
+        if ps.confirm_raw():
+
+            for lPath in lPaths:
+                lPath.remove( override = True )
+
+    def _apply_selected_indices(self, data_function, Paths_inst):
+
+        """Prompt the user to select certain files to perform a synchronization function on."""
+
+        indicies = ps.get_user_selection_for_list_items( Paths_inst,
+                                                            prompt = 'Enter number to select corresponding files, "all" for all files, enter to exit',
+                                                            exceptions= ['all'] )
+
+        if 'all' in indicies:
+            indicies = list(range(len(Paths_inst)))
+
+        selected_Paths = self.PATHS_CLASS()
+        for ind in indicies:
+            selected_Paths._add( Paths_inst.Objs[ ind ] )
+
+        successful_Paths = data_function( selected_Paths )
+        return successful_Paths
+
+    def _push_sequence(self, listfiles, mine, other):
+        """User-prompted uploading of files from a dataframe."""
+        to_push = []
+        index = 0
+        for file in listfiles:
+            to_push.append(file[0])
+            print(index, file[0], '\t', file[1], '\t', file[2], "\t by",
+                  other.loc[other[self._file_colname] == file[0]][self._editor_colname].iloc[0])
+            index += 1
+        selectedpush = self._apply_selected_indices(
+            self._upload_to_s3, to_push)
+
+        updatedins3 = mine.loc[mine[self._file_colname].isin(
+            selectedpush)]
+        newversions = pd.concat([other, updatedins3])
+        newversions = newversions.drop_duplicates(
+            [self._file_colname], keep="last").sort_index()
+        newversions.to_csv(self._s3versionspath, index=False)
+        print("Done.\n")
+
+
+ 
+    def _pull_sequence(self, listfiles, other):
+
+        """User-prompted downloading of files from a dataframe."""
+
+        to_pull = []
+        index = 0
+        for file in listfiles:
+            to_pull.append(file[0])
+            print(index, file[0], '\t', file[1], '\t', file[2], "\t by",
+                  other.loc[other[self._file_colname] == file[0]][self._editor_colname].iloc[0])
+            index += 1
+        self._apply_selected_indices(self._download_from_s3, to_pull)
+        print("Done.\n")
+
+ 
 
     def reset_confirm(self) -> bool:
 
