@@ -209,13 +209,13 @@ class BasePlatform( ParentClass ):
         df_versions = self._compute_directory( download_lDir, False )
         temp_remote_versions_lPath = download_lDir.join_Path( path = self._remote_versions_lPath.filename )
         df_versions.to_csv( temp_remote_versions_lPath.path, index = False )
-        self._remote_versions_rPath.upload( Destination = temp_remote_versions_lPath )        
+        self._remote_versions_rPath.upload( Destination = temp_remote_versions_lPath, override = True )        
 
         # Upload deleted
         df_empty = pd.DataFrame( columns=self.columns )
         temp_remote_delete_lPath = download_lDir.join_Path( path = self._remote_delete_lPath.filename )
         df_empty.to_csv( temp_remote_delete_lPath.path , index=False)
-        self._remote_delete_rPath.upload( Destination = temp_remote_delete_lPath )        
+        self._remote_delete_rPath.upload( Destination = temp_remote_delete_lPath, override = True )        
 
     def synchronize(self):
         """Prompt the user to synchronize all local files with remote files"""
