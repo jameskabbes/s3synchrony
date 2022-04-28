@@ -33,57 +33,130 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+from jinja2 import TemplateError
 import s3synchrony as s3s
 import py_starter as ps
 
-_supported_platforms = { "s3": s3s.Platforms.s3.Platform }
+def get_Paths_no_init( Dir_inst ):
 
+    Paths_inst = Dir_inst.list_contents_Paths( block_dirs=True, block_paths=False )
+    
+    for i in range( len(Paths_inst) -1, -1, -1):
+        if Paths_inst.Objs[ i ].root == '__init__':
+            del Paths_inst.Objs[ i ]
 
-def get_supported_platforms():
-    """Return a list of the supported data platforms."""
-    return [*_supported_platforms]
+    return Paths_inst
 
-def get_connection( platform, **kwargs ):
-
-    if(platform in _supported_platforms):
-        connection = _supported_platforms[platform](**kwargs)
-        return connection
-
-    else:
-        print ('No platform {platform} available'.format( platform = platform ) )
-        return None
-
-
-def smart_sync( platform = "s3", **kwargs):
+def smart_sync( platform = None, **kwargs):
 
     """Perform all necessary steps to synchronize a local repository with a remote repo."""
 
-    connection = get_connection( **kwargs )
-    connection.run()
+    Platform_inst = get_platform( platform, **kwargs )
+    Platform_inst.run()
 
-def get_template():
-
-    #list_contents_Paths()
-    module_Paths = s3synchrony.templates_Dir.list_contents_Paths( block_paths=False,block_dirs=True )
-    module_Path = ps.get_selection_from_list( module_Paths )
-    return module_Path.import_module()
-
-
-def reset_all( **kwargs ):
+def reset_all( platform = None, **kwargs ):
 
     """Reset local and remote directories to original state."""
 
-    connection = get_connection( **kwargs )
-    connection.reset_all()
+    Platform_inst = get_platform( platform, **kwargs )
+    Platform_inst.reset_all()
+
+def get_supported_platforms():
+
+    platform_Paths = get_Paths_no_init( s3s.platforms_Dir )
+    return platform_Paths
+
+def get_platform_Path_user():
+
+    platform_Paths = get_supported_platforms()
+    platform_Path = ps.get_selection_from_list( platform_Paths, prompt='Select which platform to use' )
+
+    return platform_Path
+
+def get_platform( platform, **kwargs ):
+
+    platform_Paths = get_supported_platforms()
+
+    # First, see if the given "platform" var is in the supported platforms
+    found = False
+    for platform_Path in platform_Paths:
+
+        if platform_Path.root == platform:
+            found = True
+            break
+    
+    # If not, have the user choose from an existing platform
+    if not found:
+        platform_Path = get_platform_Path_user()
+    
+    # If not platform exists at all
+    if platform_Path == None:
+        return None
+    
+    else:
+        module = platform_Path.import_module()
+        return module.Platform( **kwargs )  #return the class point
+
+
+def get_supported_templates():
+
+    platform_Paths = get_Paths_no_init( s3s.templates_Dir )
+    return platform_Paths
+
+def get_template_Path_user():
+
+    template_Paths = get_supported_templates()
+    template_Path = ps.get_selection_from_list( template_Paths )
+
+    return template_Path
+
+def get_template( template ):
+
+    """ returns a module """
+
+    template_Paths = get_supported_templates()
+
+    # First, see if the given "platform" var is in the supported platforms
+    found = False
+    for template_Path in template_Paths:
+
+        if template_Path.root == template:
+            found = True
+            break
+    
+    # If not, have the user choose from an existing platform
+    if not found:
+        template_Path = get_template_Path_user()
+    
+    # If not platform exists at all
+    if template_Path == None:
+        return None
+    
+    else:
+        return template_Path.import_module()
 
 def run():
 
-    if s3synchrony.json_Path.exists():
-        sync_params = ps.json_to_dict( s3synchrony.json_Path.read() )
-        module = get_template()
-        module.run( sync_params )
+    default_params = {
+        'template': None,
+        'platform': None
+    }
+
+    if s3s.json_Path.exists():
+        sync_params = ps.json_to_dict( s3s.json_Path.read() )
+        sync_params = ps.merge_dicts( default_params, sync_params )
+
+        template_module = get_template( sync_params['template'] )
+        new_sync_params = template_module.get_params( sync_params )
+
+        smart_sync( **new_sync_params )
+
     else:
-        print ('No sync JSON file')
+        print ()
+        print ('ERROR: No sync JSON file. Are you in the right directory?')
+        print ('Would you like to place the s3synchrony.json template file in this directory?')
+
+        s3s.template_json_Path.copy( Destination = s3s.json_Path )
 
 
 if __name__ == '__main__':
