@@ -1,4 +1,5 @@
 {
+    "platform": "s3",
     "local_data_rel_dir": "Data",
     "remote_data_dir": "folder/inside/the/bucket",
     "aws_bkt": "your-aws-bucket",
