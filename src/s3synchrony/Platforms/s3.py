@@ -19,29 +19,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import os
-import sys
-import pathlib
-import shutil
-
-import pandas as pd
-import datetime as dt
-import boto3
-import botocore.exceptions
-import pyperclip
-import aws_credentials
 
 import s3synchrony as s3s
 from s3synchrony import BasePlatform
 
 import py_starter as ps
-import dir_ops as do
-
 import aws_connections
 import aws_connections.s3 as s3
 
 
-class Platform( s3s.BasePlatform ):
+class Platform( BasePlatform ):
 
     util_dir = '.S3'
 
@@ -61,17 +48,15 @@ class Platform( s3s.BasePlatform ):
         BasePlatform.__init__( self, **joined_kwargs )
 
         if not s3.S3Dir.is_Dir( self.data_rDir ):
-            self.data_rDir = s3.S3Dir( bucket = self.aws_bkt, path = self.remote_data_dir )
+            self.data_rDir = s3.S3Dir( bucket = self.aws_bkt, path = self.remote_data_dir, conn = self.conn )
 
-        self._util_rDir = s3.S3Dir( bucket = self.aws_bkt, path = self.data_rDir.join( self.util_dir ) )
-        self._util_deleted_rDir = s3.S3Dir( bucket = self.aws_bkt, path = self._util_rDir.join( 'deleted' ) )
-        self._remote_versions_rPath = s3.S3Path( bucket = self.aws_bkt, 
-                                                  path = self._util_rDir.join( self._remote_versions_lPath.filename ) )
-        self._remote_delete_rPath = s3.S3Path( bucket = self.aws_bkt, 
-                                                path = self._util_rDir.join( self._remote_delete_lPath.filename ) )
+        self._util_rDir = self.data_rDir.join_Dir( path = self.util_dir ) #S3Dir
+        self._util_deleted_rDir = self._util_rDir.join_Dir( path = 'deleted' ) #S3Dir
+        self._remote_versions_rPath = self._util_rDir.join_Path( path = self._remote_versions_lPath.filename )
+        self._remote_delete_rPath = self._util_rDir.join_Path( path = self._remote_delete_lPath.filename )
 
 
     def _get_remote_connection( self ):
 
-        self.conn = aws_credentials.Connection( "s3", **self.credentials )
+        self.conn = aws_connections.Connection( "s3", **self.credentials )
 
