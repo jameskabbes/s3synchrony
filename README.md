@@ -1,9 +1,10 @@
-[GitHub Pages](https://jameskabbes.github.io/s3synchrony/)
+[GitHub Pages](https://jameskabbes.github.io/s3synchrony)<br>
+[PyPI](https://pypi.org/project/kabbes-s3synchrony)
 
 # s3synchrony
 Synchronizing data folders across all team members.
 
-# Install
+# Installation
 ```
 pip install kabbes_s3synchrony
 ```
@@ -72,7 +73,7 @@ Resetting all S3Synchrony services is as simple as deleting the .S3 folders cont
 
 Before resetting, however, a call to reset_confirm **must** occur. The user will then be prompted to confirm that they would like their .S3 folders removed.
 
-## License
+# License
 [GNU GPLv3](https://www.gnu.org/licenses/)
 
 
