@@ -489,7 +489,7 @@ class BasePlatform( ParentClass ):
         rel_lPath = lPath.get_rel( self.data_lDir )
         rPath = self.data_rDir.join_Path( Path = rel_lPath )
         
-        return rPath.upload( Destination = lPath )
+        return rPath.upload( Destination = lPath, override = True )
 
     @data_function
     def _download_from_remote(self, rPath):
@@ -497,7 +497,7 @@ class BasePlatform( ParentClass ):
         rel_rPath = rPath.get_rel( self.data_rDir )
         lPath = self.data_lDir.join_Path( Path = rel_rPath )
         
-        return rPath.download( Destination = lPath )
+        return rPath.download( Destination = lPath, override = True )
 
     @ps.confirm_wrap('Are you sure you want to delete these files?')
     @data_function
