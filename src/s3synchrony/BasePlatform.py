@@ -489,7 +489,7 @@ class BasePlatform( ParentClass ):
         rel_lPath = lPath.get_rel( self.data_lDir )
         rPath = self.data_rDir.join_Path( Path = rel_lPath )
         
-        return rPath.upload( Destination = lPath )
+        return rPath.upload( Destination = lPath, override = True )
 
     @data_function
     def _download_from_remote(self, rPath):
@@ -497,59 +497,38 @@ class BasePlatform( ParentClass ):
         rel_rPath = rPath.get_rel( self.data_rDir )
         lPath = self.data_lDir.join_Path( Path = rel_rPath )
         
-        return rPath.download( Destination = lPath )
+        return rPath.download( Destination = lPath, override = True )
 
-    @ps.confirm_wrap('Are you sure you want to delete these files?')
+    @ps.confirm_wrap( 'Are you sure you want to delete these files?' )
     @data_function
-    def _delete_from_remote(self, rPaths):
+    def _delete_from_remote(self, rPath):
 
-        """Attempt to delete every file provided from the remote S3 prefix."""
+        rel_rPath = rPath.get_rel( self.data_rDir ) 
+        deleted_rPath = self._util_deleted_rDir.join_Path( Path = rel_rPath )
 
-        successful_Paths = self.PATHS_CLASS()
+        # make a copy of the deleted file into the deleted folder in the util section
+        if rPath.copy( Destination = deleted_rPath, override = True ):
+            return rPath.remove( override = True )
+        return False
 
-        print("Are you sure you want to delete these files from S3?")
-        if ps.confirm_raw():
-
-            for rPath in rPaths:
-                
-                rel_rPath = rPath.get_rel( self.data_rDir ) 
-                deleted_rPath = self._util_deleted_rDir.join_Path( Path = rel_rPath )
-
-                # make a copy of the deleted file into the deleted folder in the util section
-                if rPath.copy( Destination = deleted_rPath, override = True ):
-                    if rPath.delete( override = True ):
-                        successful_Paths._add( rPath )
-
-        return successful_Paths
-
+    @ps.confirm_wrap( 'Are you sure you want to delete these files?' )
     @data_function
-    def _delete_from_local(self, lPaths):
+    def _delete_from_local(self, lPath):
 
-        """Attempt to delete every file requested from our local data folder."""
-        
-        print("Are you sure you want to delete these files from your computer?")
-        if ps.confirm_raw():
-
-            for lPath in lPaths:
-                lPath.remove( override = True )
+        return lPath.remove( override = True )
 
     def _apply_selected_indices(self, data_function, Paths_inst):
 
         """Prompt the user to select certain files to perform a synchronization function on."""
 
-        indicies = ps.get_user_selection_for_list_items( Paths_inst.export_strings(),
-                                                            prompt = 'Enter number to select corresponding files, "all" for all files, enter to exit',
-                                                            exceptions= ['all'],
-                                                            print_off=False )
+        indices = ps.get_user_selection_for_list_items( Paths_inst.export_strings(), print_off=False )
 
-        if 'all' in indicies:
-            indicies = list(range(len(Paths_inst)))
+        all_indices = list(range(len(Paths_inst)))
+        inds_not_selected = [ ind for ind in all_indices if ind not in indices ]
 
-        selected_Paths = self.PATHS_CLASS()
-        for ind in indicies:
-            selected_Paths._add( Paths_inst.Objs[ ind ] )
-
-        successful_Paths = data_function( selected_Paths )
+        Paths_inst._remove_inds( inds_not_selected )
+            
+        successful_Paths = data_function( Paths_inst )
         return successful_Paths
 
     def _push_sequence(self, listfiles, mine, other):
