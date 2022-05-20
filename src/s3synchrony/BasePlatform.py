@@ -489,7 +489,7 @@ class BasePlatform( ParentClass ):
         rel_lPath = lPath.get_rel( self.data_lDir )
         rPath = self.data_rDir.join_Path( Path = rel_lPath )
         
-        return rPath.upload( Destination = lPath, override = True )
+        return rPath.upload( Destination = lPath, override = True, print_off = True )
 
     @data_function
     def _download_from_remote(self, rPath):
@@ -497,9 +497,8 @@ class BasePlatform( ParentClass ):
         rel_rPath = rPath.get_rel( self.data_rDir )
         lPath = self.data_lDir.join_Path( Path = rel_rPath )
         
-        return rPath.download( Destination = lPath, override = True )
+        return rPath.download( Destination = lPath, override = True, print_off = True )
 
-    @ps.confirm_wrap( 'Are you sure you want to delete these files?' )
     @data_function
     def _delete_from_remote(self, rPath):
 
@@ -508,14 +507,13 @@ class BasePlatform( ParentClass ):
 
         # make a copy of the deleted file into the deleted folder in the util section
         if rPath.copy( Destination = deleted_rPath, override = True ):
-            return rPath.remove( override = True )
+            return rPath.remove( override = True, print_off = True )
         return False
 
-    @ps.confirm_wrap( 'Are you sure you want to delete these files?' )
     @data_function
     def _delete_from_local(self, lPath):
 
-        return lPath.remove( override = True )
+        return lPath.remove( override = True, print_off = True )
 
     def _apply_selected_indices(self, data_function, Paths_inst):
 
