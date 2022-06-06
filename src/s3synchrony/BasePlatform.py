@@ -219,9 +219,9 @@ class BasePlatform( ParentClass ):
 
     def synchronize(self):
         """Prompt the user to synchronize all local files with remote files"""
-        
-        self._remote_versions_rPath.download( Destination = self._remote_versions_lPath, override = True )
-        self._remote_delete_rPath.download( Destination = self._remote_delete_lPath, override = True )
+
+        self._remote_versions_rPath.download( Destination = self._remote_versions_lPath, override = True, overwrite = True )
+        self._remote_delete_rPath.download( Destination = self._remote_delete_lPath, override = True, overwrite = True )
 
         self._push_deleted_remote()
         self._pull_deleted_local()
