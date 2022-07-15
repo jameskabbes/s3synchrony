@@ -33,7 +33,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-from jinja2 import TemplateError
 import s3synchrony as s3s
 import py_starter as ps
 
