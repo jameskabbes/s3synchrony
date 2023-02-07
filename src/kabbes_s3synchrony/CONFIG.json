@@ -1,0 +1,14 @@
+{
+    "template": "default",
+    "reset": false,
+    "local_data_rel_dir": "Data",
+    "remote_data_dir": null,
+
+    "platform": "s3",
+    "platforms": {
+        "s3":{
+            "aws_bkt": null,
+            "aws_role_shorthand": null
+        }        
+    }
+}
