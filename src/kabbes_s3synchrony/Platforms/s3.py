@@ -17,8 +17,6 @@ class Platform( kabbes_s3synchrony.BasePlatform ):
 
         kabbes_s3synchrony.BasePlatform.__init__( self, *args, **kwargs )
 
-        self.cfg.print_atts()
-
         self.data_rDir = aws_connections.s3.S3Dir( bucket = self.cfg['aws_bkt'], path = self.Connection.cfg['remote_data_dir'], conn = self.remote_connection )
 
         self._util_rDir = self.data_rDir.join_Dir( path = self.UTIL_DIR ) #S3Dir
