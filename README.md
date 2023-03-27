@@ -1,8 +1,8 @@
-[GitHub Pages](https://jameskabbes.github.io/s3synchrony)<br>
-[PyPI](https://pypi.org/project/kabbes-s3synchrony)
-
 # s3synchrony
 Synchronizing data folders across all team members.
+
+[Documentation](https://jameskabbes.github.io/s3synchrony)<br>
+[PyPI](https://pypi.org/project/kabbes-s3synchrony)
 
 # Installation
 ```
