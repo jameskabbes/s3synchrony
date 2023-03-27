@@ -1,34 +1,13 @@
-"""Contains the DataPlatformConnection class.
-
-DataPlatformConnection - Default data platform class from which others should inherit.
-
-Copyright (C) 2022  Sevan Brodjian
-Created for Ameren at the Ameren Innovation Center @ UIUC
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-"""
-
 import hashlib
 import datetime as dt
 
-import s3synchrony as s3s
+import kabbes_s3synchrony
 import py_starter as ps
 import dir_ops as do
 import pandas as pd
 from parent_class import ParentClass
 import functools
-
+import os
 
 
 def data_function( method ):
@@ -49,23 +28,7 @@ def data_function( method ):
 
 class BasePlatform( ParentClass ):
 
-    """Default class for data platforms.
-
-    This class should only be instantiated as a backup case when unrecognized
-    input is provided. Otherwise, this class should be used as an interface to
-    be inherited from by future connections. All public methods listed here
-    should be overridden by the child classes.
-    """
-
-    util_dir = '.BASE'
-
-    DEFAULT_KWARGS = {
-        'local_data_rel_dir': "Data",
-        'remote_data_dir': "Data",
-        'data_lDir': None,
-        'data_rDir': None,
-        '_name' : 'NONAME'
-    }
+    NAME = do.Path( os.path.abspath( __file__ ) ).root #s3
 
     DIR_CLASS = do.Dir
     DIRS_CLASS = do.Dirs
@@ -80,19 +43,23 @@ class BasePlatform( ParentClass ):
     dttm_format = "%Y-%m-%d %H:%M:%S"
 
 
-    def __init__(self, **kwargs):
+    def __init__(self, Connection, **kwargs ):
         """Initialize necessary instance variables."""
 
         ParentClass.__init__( self )
-        joined_kwargs = ps.merge_dicts( BasePlatform.DEFAULT_KWARGS, kwargs )
-        self.set_atts( joined_kwargs )
 
         ###
-        if not do.Dir.is_Dir( self.data_lDir ):
-            self.data_lDir = do.Dir( s3s._cwd_Dir.join( self.local_data_rel_dir ) )
+        self.UTIL_DIR = '.' + self.NAME.upper() #.S3
+
+        ### set cfg
+        self.Connection = Connection
+        self.cfg = self.Connection.cfg[ self.Connection.platform_node_name ]
+
+        ###
+        self.data_lDir = do.Dir( self.Connection.cfg.parent['cwd.Dir'].join( self.Connection.cfg['local_data_rel_dir'] ) )
 
         #lDir is a local Dir, rDir is a remote dir
-        self._util_lDir =  do.Dir( self.data_lDir.join(  self.util_dir ) )
+        self._util_lDir =  do.Dir( self.data_lDir.join(  self.UTIL_DIR ) )
 
         self._remote_versions_lPath = do.Path( self._util_lDir.join( 'versions_remote.csv' ) )
         self._local_versions_lPath =  do.Path( self._util_lDir.join( 'versions_local.csv' ) )
@@ -118,23 +85,21 @@ class BasePlatform( ParentClass ):
         self._get_remote_connection()    
 
     def _get_remote_connection( self ):
-
-        self.conn = None
+        self.remote_connection = None
 
     def run( self ):
 
         self.intro_message()
         self.establish_connection()
-        self.synchronize()
-        self.close_message()
 
-    def reset_all( self ):
+        if self.Connection.cfg['reset']:
+            if self.reset_confirm():
+                self.reset_local()
+                self.reset_remote()
 
-        self.intro_message()
-        self.establish_connection()
-        if self.reset_confirm():
-            self.reset_local()
-            self.reset_remote()
+        else:
+            self.synchronize()
+
         self.close_message()
 
     def intro_message(self):
@@ -460,7 +425,7 @@ class BasePlatform( ParentClass ):
 
         df = pd.DataFrame(columns=self.columns)
 
-        folders_to_skip = [ self.util_dir ]
+        folders_to_skip = [ self.UTIL_DIR ]
         if not ignore_util:
             folders_to_skip = []
 
@@ -472,7 +437,7 @@ class BasePlatform( ParentClass ):
             df_new[ self._file_colname ] = [Path_inst.get_rel( lDir ).path  ]
             df_new[ self._time_colname ] = Path_inst.get_mtime().strftime( self.dttm_format )
             df_new[ self._hash_colname ] = self._hash( Path_inst.path )
-            df_new[ self._editor_colname ] = self._name
+            df_new[ self._editor_colname ] = self.Connection.cfg['_name']
 
             df = pd.concat([df, df_new], ignore_index=True)
 
@@ -579,7 +544,7 @@ class BasePlatform( ParentClass ):
 
         print('Are you sure you would like to reset the remote data directory?')
         print('This will not change any of your file contents, but will delete the entire')
-        confirm = input( str(self.util_dir) + ' folder on your local computer and on your AWS prefix: ' + self.aws_prfx + ' (y/n): ')
+        confirm = input( str(self.UTIL_DIR) + ' folder on your local computer and on your AWS prefix: ' + self.aws_prfx + ' (y/n): ')
 
         if confirm.lower() != 'y':
             print("Reset aborted.")
@@ -615,3 +580,5 @@ class BasePlatform( ParentClass ):
         file = open(filepath, "rb")
         data = file.read()
         return hashlib.md5(data).hexdigest()
+
+
