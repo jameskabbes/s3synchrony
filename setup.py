@@ -1,7 +1,11 @@
-import setuptools
+from setuptools import setup
 
-setuptools.setup(
-      package_data={'s3synchrony': 
-            [ 's3synchrony_template.json' ]
-            }
-     )
+if __name__ == '__main__':
+    
+    setup(
+        package_data={'kabbes_s3synchrony': 
+        [ 
+            'CONFIG.json'
+        ]
+        }
+    )
