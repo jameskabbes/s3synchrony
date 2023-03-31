@@ -1,7 +1,7 @@
 kabbes_py_starter>=0.8.0
 kabbes_parent_class>=0.5.0
 kabbes_dir_ops>=0.7.0
-kabbes_aws_credentials>=0.6.0
+kabbes_aws_credentials
 kabbes_aws_connections
 kabbes_user_profile
 kabbes_client
