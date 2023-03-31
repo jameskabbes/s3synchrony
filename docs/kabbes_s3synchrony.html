@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kabbes_s3synchrony package &mdash; kabbes_s3synchrony 0.4.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="kabbes_s3synchrony.Platforms package" href="kabbes_s3synchrony.Platforms.html" />
+    <link rel="prev" title="src" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            kabbes_s3synchrony
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">kabbes_s3synchrony package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kabbes_s3synchrony.Platforms.html">kabbes_s3synchrony.Platforms package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="kabbes_s3synchrony.Templates.html">kabbes_s3synchrony.Templates package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-kabbes_s3synchrony.BasePlatform">kabbes_s3synchrony.BasePlatform module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#kabbes_s3synchrony.BasePlatform.BasePlatform"><code class="docutils literal notranslate"><span class="pre">BasePlatform</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kabbes_s3synchrony.BasePlatform.data_function"><code class="docutils literal notranslate"><span class="pre">data_function()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-kabbes_s3synchrony.Client">kabbes_s3synchrony.Client module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#kabbes_s3synchrony.Client.Client"><code class="docutils literal notranslate"><span class="pre">Client</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-kabbes_s3synchrony.Connection">kabbes_s3synchrony.Connection module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#kabbes_s3synchrony.Connection.Connection"><code class="docutils literal notranslate"><span class="pre">Connection</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-kabbes_s3synchrony">Module contents</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#kabbes_s3synchrony.get_platform"><code class="docutils literal notranslate"><span class="pre">get_platform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#kabbes_s3synchrony.get_template"><code class="docutils literal notranslate"><span class="pre">get_template()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">kabbes_s3synchrony</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+      <li class="breadcrumb-item active">kabbes_s3synchrony package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/kabbes_s3synchrony.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="kabbes-s3synchrony-package">
+<h1>kabbes_s3synchrony package<a class="headerlink" href="#kabbes-s3synchrony-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="kabbes_s3synchrony.Platforms.html">kabbes_s3synchrony.Platforms package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kabbes_s3synchrony.Platforms.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kabbes_s3synchrony.Platforms.html#module-kabbes_s3synchrony.Platforms.s3">kabbes_s3synchrony.Platforms.s3 module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kabbes_s3synchrony.Platforms.html#kabbes_s3synchrony.Platforms.s3.Platform"><code class="docutils literal notranslate"><span class="pre">Platform</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="kabbes_s3synchrony.Platforms.html#kabbes_s3synchrony.Platforms.s3.Platform.DIRS_CLASS"><code class="docutils literal notranslate"><span class="pre">Platform.DIRS_CLASS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="kabbes_s3synchrony.Platforms.html#kabbes_s3synchrony.Platforms.s3.Platform.DIR_CLASS"><code class="docutils literal notranslate"><span class="pre">Platform.DIR_CLASS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="kabbes_s3synchrony.Platforms.html#kabbes_s3synchrony.Platforms.s3.Platform.NAME"><code class="docutils literal notranslate"><span class="pre">Platform.NAME</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="kabbes_s3synchrony.Platforms.html#kabbes_s3synchrony.Platforms.s3.Platform.PATHS_CLASS"><code class="docutils literal notranslate"><span class="pre">Platform.PATHS_CLASS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="kabbes_s3synchrony.Platforms.html#kabbes_s3synchrony.Platforms.s3.Platform.PATH_CLASS"><code class="docutils literal notranslate"><span class="pre">Platform.PATH_CLASS</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kabbes_s3synchrony.Platforms.html#module-kabbes_s3synchrony.Platforms">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="kabbes_s3synchrony.Templates.html">kabbes_s3synchrony.Templates package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="kabbes_s3synchrony.Templates.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="kabbes_s3synchrony.Templates.html#module-kabbes_s3synchrony.Templates.default">kabbes_s3synchrony.Templates.default module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kabbes_s3synchrony.Templates.html#kabbes_s3synchrony.Templates.default.set_cfg"><code class="docutils literal notranslate"><span class="pre">set_cfg()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kabbes_s3synchrony.Templates.html#module-kabbes_s3synchrony.Templates.no_creds_needed">kabbes_s3synchrony.Templates.no_creds_needed module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="kabbes_s3synchrony.Templates.html#kabbes_s3synchrony.Templates.no_creds_needed.get_params"><code class="docutils literal notranslate"><span class="pre">get_params()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="kabbes_s3synchrony.Templates.html#module-kabbes_s3synchrony.Templates">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-kabbes_s3synchrony.BasePlatform">
+<span id="kabbes-s3synchrony-baseplatform-module"></span><h2>kabbes_s3synchrony.BasePlatform module<a class="headerlink" href="#module-kabbes_s3synchrony.BasePlatform" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kabbes_s3synchrony.BasePlatform.</span></span><span class="sig-name descname"><span class="pre">BasePlatform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Connection</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony/BasePlatform.html#BasePlatform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ParentClass</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.DIRS_CLASS">
+<span class="sig-name descname"><span class="pre">DIRS_CLASS</span></span><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.DIRS_CLASS" title="Permalink to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">Dirs</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.DIR_CLASS">
+<span class="sig-name descname"><span class="pre">DIR_CLASS</span></span><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.DIR_CLASS" title="Permalink to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">Dir</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.NAME">
+<span class="sig-name descname"><span class="pre">NAME</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BasePlatform'</span></em><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.NAME" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.PATHS_CLASS">
+<span class="sig-name descname"><span class="pre">PATHS_CLASS</span></span><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.PATHS_CLASS" title="Permalink to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">Paths</span></code></p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.PATH_CLASS">
+<span class="sig-name descname"><span class="pre">PATH_CLASS</span></span><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.PATH_CLASS" title="Permalink to this definition"></a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.close_message">
+<span class="sig-name descname"><span class="pre">close_message</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony/BasePlatform.html#BasePlatform.close_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.close_message" title="Permalink to this definition"></a></dt>
+<dd><p>Print a closing message to signal program end.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.columns">
+<span class="sig-name descname"><span class="pre">columns</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['File',</span> <span class="pre">'Edited</span> <span class="pre">By',</span> <span class="pre">'Time</span> <span class="pre">Edited',</span> <span class="pre">'Checksum']</span></em><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.columns" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.dttm_format">
+<span class="sig-name descname"><span class="pre">dttm_format</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'%Y-%m-%d</span> <span class="pre">%H:%M:%S'</span></em><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.dttm_format" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.establish_connection">
+<span class="sig-name descname"><span class="pre">establish_connection</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony/BasePlatform.html#BasePlatform.establish_connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.establish_connection" title="Permalink to this definition"></a></dt>
+<dd><p>Form a connection to the remote repository.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.intro_message">
+<span class="sig-name descname"><span class="pre">intro_message</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony/BasePlatform.html#BasePlatform.intro_message"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.intro_message" title="Permalink to this definition"></a></dt>
+<dd><p>Print an introductory message to signal program start.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.reset_confirm">
+<span class="sig-name descname"><span class="pre">reset_confirm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/kabbes_s3synchrony/BasePlatform.html#BasePlatform.reset_confirm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.reset_confirm" title="Permalink to this definition"></a></dt>
+<dd><p>Prompt the user to confirm whether a reset can occur.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.reset_local">
+<span class="sig-name descname"><span class="pre">reset_local</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony/BasePlatform.html#BasePlatform.reset_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.reset_local" title="Permalink to this definition"></a></dt>
+<dd><p>Remove all modifications made locally by synchronization.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.reset_remote">
+<span class="sig-name descname"><span class="pre">reset_remote</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony/BasePlatform.html#BasePlatform.reset_remote"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.reset_remote" title="Permalink to this definition"></a></dt>
+<dd><p>Remove all modifications made to the remote repo by synchronization.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony/BasePlatform.html#BasePlatform.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.run" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.BasePlatform.synchronize">
+<span class="sig-name descname"><span class="pre">synchronize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony/BasePlatform.html#BasePlatform.synchronize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.BasePlatform.synchronize" title="Permalink to this definition"></a></dt>
+<dd><p>Prompt the user to synchronize all local files with remote files</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.BasePlatform.data_function">
+<span class="sig-prename descclassname"><span class="pre">kabbes_s3synchrony.BasePlatform.</span></span><span class="sig-name descname"><span class="pre">data_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony/BasePlatform.html#data_function"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.BasePlatform.data_function" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-kabbes_s3synchrony.Client">
+<span id="kabbes-s3synchrony-client-module"></span><h2>kabbes_s3synchrony.Client module<a class="headerlink" href="#module-kabbes_s3synchrony.Client" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.Client.Client">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kabbes_s3synchrony.Client.</span></span><span class="sig-name descname"><span class="pre">Client</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony/Client.html#Client"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.Client.Client" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#kabbes_s3synchrony.Connection.Connection" title="kabbes_s3synchrony.Connection.Connection"><code class="xref py py-class docutils literal notranslate"><span class="pre">Connection</span></code></a></p>
+</dd></dl>
+
+</section>
+<section id="module-kabbes_s3synchrony.Connection">
+<span id="kabbes-s3synchrony-connection-module"></span><h2>kabbes_s3synchrony.Connection module<a class="headerlink" href="#module-kabbes_s3synchrony.Connection" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.Connection.Connection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">kabbes_s3synchrony.Connection.</span></span><span class="sig-name descname"><span class="pre">Connection</span></span><a class="reference internal" href="_modules/kabbes_s3synchrony/Connection.html#Connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.Connection.Connection" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ParentClass</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.Connection.Connection.run">
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony/Connection.html#Connection.run"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.Connection.Connection.run" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-kabbes_s3synchrony">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-kabbes_s3synchrony" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.get_platform">
+<span class="sig-prename descclassname"><span class="pre">kabbes_s3synchrony.</span></span><span class="sig-name descname"><span class="pre">get_platform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">platform_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony.html#get_platform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.get_platform" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="kabbes_s3synchrony.get_template">
+<span class="sig-prename descclassname"><span class="pre">kabbes_s3synchrony.</span></span><span class="sig-name descname"><span class="pre">get_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/kabbes_s3synchrony.html#get_template"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#kabbes_s3synchrony.get_template" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="src" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="kabbes_s3synchrony.Platforms.html" class="btn btn-neutral float-right" title="kabbes_s3synchrony.Platforms package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, James Kabbes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

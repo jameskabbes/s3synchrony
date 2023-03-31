@@ -1,0 +1,21 @@
+kabbes\_s3synchrony.Platforms package
+=====================================
+
+Submodules
+----------
+
+kabbes\_s3synchrony.Platforms.s3 module
+---------------------------------------
+
+.. automodule:: kabbes_s3synchrony.Platforms.s3
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: kabbes_s3synchrony.Platforms
+   :members:
+   :undoc-members:
+   :show-inheritance:

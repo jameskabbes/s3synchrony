@@ -1,0 +1,29 @@
+kabbes\_s3synchrony.Templates package
+=====================================
+
+Submodules
+----------
+
+kabbes\_s3synchrony.Templates.default module
+--------------------------------------------
+
+.. automodule:: kabbes_s3synchrony.Templates.default
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+kabbes\_s3synchrony.Templates.no\_creds\_needed module
+------------------------------------------------------
+
+.. automodule:: kabbes_s3synchrony.Templates.no_creds_needed
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: kabbes_s3synchrony.Templates
+   :members:
+   :undoc-members:
+   :show-inheritance:

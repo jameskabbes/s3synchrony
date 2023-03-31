@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>kabbes_s3synchrony.BasePlatform &mdash; kabbes_s3synchrony 0.4.0 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            kabbes_s3synchrony
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">kabbes_s3synchrony</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+          <li class="breadcrumb-item"><a href="../kabbes_s3synchrony.html">kabbes_s3synchrony</a></li>
+      <li class="breadcrumb-item active">kabbes_s3synchrony.BasePlatform</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for kabbes_s3synchrony.BasePlatform</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">datetime</span> <span class="k">as</span> <span class="nn">dt</span>
+
+<span class="kn">import</span> <span class="nn">kabbes_s3synchrony</span>
+<span class="kn">import</span> <span class="nn">py_starter</span> <span class="k">as</span> <span class="nn">ps</span>
+<span class="kn">import</span> <span class="nn">dir_ops</span> <span class="k">as</span> <span class="nn">do</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">parent_class</span> <span class="kn">import</span> <span class="n">ParentClass</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+
+<div class="viewcode-block" id="data_function"><a class="viewcode-back" href="../../kabbes_s3synchrony.html#kabbes_s3synchrony.BasePlatform.data_function">[docs]</a><span class="k">def</span> <span class="nf">data_function</span><span class="p">(</span> <span class="n">method</span> <span class="p">):</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span> <span class="n">method</span> <span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">Paths_inst</span> <span class="p">):</span>
+
+        <span class="n">successful_Paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PATHS_CLASS</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">Path_inst</span> <span class="ow">in</span> <span class="n">Paths_inst</span><span class="p">:</span> 
+            <span class="k">if</span> <span class="n">method</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">Path_inst</span> <span class="p">):</span>
+                <span class="n">successful_Paths</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span> <span class="n">Path_inst</span> <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">successful_Paths</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+<div class="viewcode-block" id="BasePlatform"><a class="viewcode-back" href="../../kabbes_s3synchrony.html#kabbes_s3synchrony.BasePlatform.BasePlatform">[docs]</a><span class="k">class</span> <span class="nc">BasePlatform</span><span class="p">(</span> <span class="n">ParentClass</span> <span class="p">):</span>
+
+    <span class="n">NAME</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span> <span class="vm">__file__</span> <span class="p">)</span> <span class="p">)</span><span class="o">.</span><span class="n">root</span> <span class="c1">#s3</span>
+
+    <span class="n">DIR_CLASS</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Dir</span>
+    <span class="n">DIRS_CLASS</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Dirs</span>
+    <span class="n">PATH_CLASS</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Path</span>
+    <span class="n">PATHS_CLASS</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Paths</span>
+
+    <span class="n">_file_colname</span> <span class="o">=</span> <span class="s2">&quot;File&quot;</span>
+    <span class="n">_editor_colname</span> <span class="o">=</span> <span class="s2">&quot;Edited By&quot;</span>
+    <span class="n">_time_colname</span> <span class="o">=</span> <span class="s2">&quot;Time Edited&quot;</span>
+    <span class="n">_hash_colname</span> <span class="o">=</span> <span class="s2">&quot;Checksum&quot;</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">_file_colname</span><span class="p">,</span> <span class="n">_editor_colname</span><span class="p">,</span> <span class="n">_time_colname</span><span class="p">,</span> <span class="n">_hash_colname</span><span class="p">]</span>
+    <span class="n">dttm_format</span> <span class="o">=</span> <span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span>
+
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Connection</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span> <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize necessary instance variables.&quot;&quot;&quot;</span>
+
+        <span class="n">ParentClass</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span> <span class="p">)</span>
+
+        <span class="c1">###</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">UTIL_DIR</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">NAME</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="c1">#.S3</span>
+
+        <span class="c1">### set cfg</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Connection</span> <span class="o">=</span> <span class="n">Connection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">cfg</span><span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">platform_node_name</span> <span class="p">]</span>
+
+        <span class="c1">###</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Dir</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">cfg</span><span class="o">.</span><span class="n">parent</span><span class="p">[</span><span class="s1">&#39;cwd.Dir&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;local_data_rel_dir&#39;</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+
+        <span class="c1">#lDir is a local Dir, rDir is a remote dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_util_lDir</span> <span class="o">=</span>  <span class="n">do</span><span class="o">.</span><span class="n">Dir</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>  <span class="bp">self</span><span class="o">.</span><span class="n">UTIL_DIR</span> <span class="p">)</span> <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_lPath</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_util_lDir</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="s1">&#39;versions_remote.csv&#39;</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local_versions_lPath</span> <span class="o">=</span>  <span class="n">do</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_util_lDir</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="s1">&#39;versions_local.csv&#39;</span> <span class="p">)</span> <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_lPath</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_util_lDir</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="s1">&#39;deleted_remote.csv&#39;</span> <span class="p">)</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_local_delete_lPath</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_util_lDir</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="s1">&#39;deleted_local.csv&#39;</span> <span class="p">)</span> <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_lDir</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Dir</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_util_lDir</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;tmp&#39;</span><span class="p">)</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logs_lDir</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Dir</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_util_lDir</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;logs&#39;</span><span class="p">)</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_lPath</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_util_lDir</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="s1">&#39;ignore_remote.txt&#39;</span> <span class="p">)</span> <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_approved</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1">### These should be defined by the Child Platform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_rDir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_util_rDir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_util_deleted_rDir</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_rPath</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_rPath</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1">### Get remote connection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_get_remote_connection</span><span class="p">()</span>    
+
+    <span class="k">def</span> <span class="nf">_get_remote_connection</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remote_connection</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="BasePlatform.run"><a class="viewcode-back" href="../../kabbes_s3synchrony.html#kabbes_s3synchrony.BasePlatform.BasePlatform.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">intro_message</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">establish_connection</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;reset&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reset_confirm</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reset_local</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">reset_remote</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">close_message</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BasePlatform.intro_message"><a class="viewcode-back" href="../../kabbes_s3synchrony.html#kabbes_s3synchrony.BasePlatform.BasePlatform.intro_message">[docs]</a>    <span class="k">def</span> <span class="nf">intro_message</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print an introductory message to signal program start.&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;###########################&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#        Data Sync        #&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;###########################&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BasePlatform.close_message"><a class="viewcode-back" href="../../kabbes_s3synchrony.html#kabbes_s3synchrony.BasePlatform.BasePlatform.close_message">[docs]</a>    <span class="k">def</span> <span class="nf">close_message</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Print a closing message to signal program end.&quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;###########################&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;#       Done Syncing      #&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;###########################&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BasePlatform.establish_connection"><a class="viewcode-back" href="../../kabbes_s3synchrony.html#kabbes_s3synchrony.BasePlatform.BasePlatform.establish_connection">[docs]</a>    <span class="k">def</span> <span class="nf">establish_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Form a connection to the remote repository.&quot;&quot;&quot;</span>
+
+        <span class="c1"># Create local data dir</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="o">.</span><span class="n">create</span><span class="p">(</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span> 
+            <span class="nb">print</span> <span class="p">(</span><span class="s1">&#39;Directory not present, creating empty directory at: &#39;</span><span class="p">)</span>
+            <span class="nb">print</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="p">)</span>
+
+        <span class="c1"># Create platform util local dir</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_util_lDir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_util_lDir</span><span class="o">.</span><span class="n">create</span><span class="p">(</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+
+        <span class="c1"># Check if there is a .S3 subfolder in this S3 bucket/prefix</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_util_rDir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This S3 prefix has not been initialized for S3 Synchrony - Initializing prefix and uploading to S3...&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_util_rDir</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done&quot;</span><span class="p">)</span>
+
+        <span class="n">has_local_lPaths</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">_local_versions_lPath</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_delete_lPath</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+        <span class="n">has_remote_lPaths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_lPath</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_lPath</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="ow">not</span> <span class="n">has_local_lPaths</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">has_remote_lPaths</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;Your data folder has not been initialized for S3 Synchrony - Downloading from S3...&quot;</span> <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_util_rDir</span><span class="o">.</span><span class="n">download</span><span class="p">(</span> <span class="n">Destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_util_lDir</span><span class="p">,</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+
+            <span class="n">empty</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="p">)</span>
+            <span class="n">empty</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_delete_lPath</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>      <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">empty</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_versions_lPath</span><span class="o">.</span><span class="n">path</span> <span class="p">,</span>   <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_lDir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_lDir</span><span class="o">.</span><span class="n">create</span><span class="p">(</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logs_lDir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logs_lDir</span><span class="o">.</span><span class="n">create</span><span class="p">(</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_lPath</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_lPath</span><span class="o">.</span><span class="n">create</span><span class="p">(</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore_lPath</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="p">)</span> <span class="c1">#list of lines</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_initialize_util_rDir</span><span class="p">(</span> <span class="bp">self</span> <span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check for all necessary files on the S3 prefix for synchronization.&quot;&quot;&quot;</span>
+        
+        <span class="n">randhex</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_randomized_dirname</span><span class="p">()</span> 
+        <span class="n">download_lDir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_lDir</span><span class="o">.</span><span class="n">join_Dir</span><span class="p">(</span> <span class="n">path</span> <span class="o">=</span> <span class="n">randhex</span> <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tmp_lDir</span><span class="o">.</span><span class="n">create</span><span class="p">(</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+        <span class="n">download_lDir</span><span class="o">.</span><span class="n">create</span><span class="p">(</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_rDir</span><span class="o">.</span><span class="n">download</span><span class="p">(</span> <span class="n">Destination</span> <span class="o">=</span> <span class="n">download_lDir</span><span class="p">,</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+
+        <span class="c1"># Upload versions</span>
+        <span class="n">df_versions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_directory</span><span class="p">(</span> <span class="n">download_lDir</span><span class="p">,</span> <span class="kc">False</span> <span class="p">)</span>
+        <span class="n">temp_remote_versions_lPath</span> <span class="o">=</span> <span class="n">download_lDir</span><span class="o">.</span><span class="n">join_Path</span><span class="p">(</span> <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_lPath</span><span class="o">.</span><span class="n">filename</span> <span class="p">)</span>
+        <span class="n">df_versions</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span> <span class="n">temp_remote_versions_lPath</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="kc">False</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_rPath</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span> <span class="n">Destination</span> <span class="o">=</span> <span class="n">temp_remote_versions_lPath</span><span class="p">,</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>        
+
+        <span class="c1"># Upload deleted</span>
+        <span class="n">df_empty</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="p">)</span>
+        <span class="n">temp_remote_delete_lPath</span> <span class="o">=</span> <span class="n">download_lDir</span><span class="o">.</span><span class="n">join_Path</span><span class="p">(</span> <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_lPath</span><span class="o">.</span><span class="n">filename</span> <span class="p">)</span>
+        <span class="n">df_empty</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span> <span class="n">temp_remote_delete_lPath</span><span class="o">.</span><span class="n">path</span> <span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_rPath</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span> <span class="n">Destination</span> <span class="o">=</span> <span class="n">temp_remote_delete_lPath</span><span class="p">,</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>        
+
+<div class="viewcode-block" id="BasePlatform.synchronize"><a class="viewcode-back" href="../../kabbes_s3synchrony.html#kabbes_s3synchrony.BasePlatform.BasePlatform.synchronize">[docs]</a>    <span class="k">def</span> <span class="nf">synchronize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prompt the user to synchronize all local files with remote files&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_rPath</span><span class="o">.</span><span class="n">download</span><span class="p">(</span> <span class="n">Destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_lPath</span><span class="p">,</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_rPath</span><span class="o">.</span><span class="n">download</span><span class="p">(</span> <span class="n">Destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_lPath</span><span class="p">,</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_push_deleted_remote</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pull_deleted_local</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_push_new_remote</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pull_new_local</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_push_modified_remote</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pull_modified_local</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_revert_modified_remote</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_revert_modified_local</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_rPath</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span> <span class="n">Destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_lPath</span><span class="p">,</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_rPath</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span> <span class="n">Destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_lPath</span><span class="p">,</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+
+        <span class="c1"># Save a snapshot of our current files into versionsLocal for next time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_compute_directory</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span> <span class="p">)</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_versions_lPath</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span> <span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_push_deleted_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove remote files that were deleted locally.&quot;&quot;&quot;</span>
+        <span class="n">mine</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mod_mine</span><span class="p">,</span> <span class="n">mod_other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dfs</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span> <span class="p">)</span>
+
+        <span class="c1"># Load in what files we had last time, and what files we have deleted in the past</span>
+        <span class="n">oldmine</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_versions_lPath</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">deletedlocal</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_delete_lPath</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="c1"># Combine a list of files we have deleted and files we have had in the past, remove any duplicates</span>
+        <span class="n">deletedlocal</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">oldmine</span><span class="p">,</span> <span class="n">deletedlocal</span><span class="p">])</span>
+        <span class="n">deletedlocal</span> <span class="o">=</span> <span class="n">deletedlocal</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">],</span> <span class="n">keep</span><span class="o">=</span><span class="s2">&quot;last&quot;</span><span class="p">)</span>
+        <span class="c1"># From previous files + deleted files select only the ones that AREN&#39;T in our local system but ARE on AWS</span>
+        <span class="n">deletedlocal</span> <span class="o">=</span> <span class="n">deletedlocal</span><span class="p">[</span><span class="o">~</span><span class="n">deletedlocal</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
+            <span class="n">mine</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">])]</span>
+        <span class="n">deletedlocal</span> <span class="o">=</span> <span class="n">other</span><span class="p">[</span><span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
+            <span class="n">deletedlocal</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">])]</span>
+
+        <span class="n">deletedlocal</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_delete_lPath</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">deletedlocal</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;UPLOAD: Would you like to delete these files on S3 that were deleted locally?:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;(&#39;file name&#39; / &#39;Date last modified on S3&#39;)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">to_delete_Paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PATHS_CLASS</span><span class="p">()</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">deletedlocal</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+
+                <span class="n">rPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_rDir</span><span class="o">.</span><span class="n">join_Path</span><span class="p">(</span> <span class="n">path</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span> <span class="p">]</span> <span class="p">)</span>
+                <span class="n">to_delete_Paths</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span> <span class="n">rPath</span> <span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">],</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_colname</span><span class="p">],</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1"> by&#39;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_editor_colname</span><span class="p">])</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="n">selected_deleted_Paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_selected_indices</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_delete_from_remote</span><span class="p">,</span> <span class="n">to_delete_Paths</span> <span class="p">)</span>
+            <span class="n">deleted_rel_paths</span> <span class="o">=</span> <span class="n">selected_deleted_Paths</span><span class="o">.</span><span class="n">get_rels</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_rDir</span> <span class="p">)</span><span class="o">.</span><span class="n">export_strings</span><span class="p">()</span>
+
+            <span class="n">deleteds3</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_lPath</span><span class="o">.</span><span class="n">path</span> <span class="p">)</span>
+            <span class="n">newdeleted</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">deleted_rel_paths</span><span class="p">)]</span>
+            <span class="n">deleteds3</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">deleteds3</span><span class="p">,</span> <span class="n">newdeleted</span><span class="p">])</span>
+            <span class="n">deleteds3</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_lPath</span><span class="o">.</span><span class="n">path</span> <span class="p">)</span>
+
+            <span class="c1"># Replace any removed file names with N/A and then drop if they have been deleted</span>
+            <span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="o">=</span> <span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                <span class="o">~</span><span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span> <span class="n">deleted_rel_paths</span> <span class="p">))</span>
+            <span class="n">other</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+            <span class="n">other</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_lPath</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+  
+    <span class="k">def</span> <span class="nf">_pull_deleted_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove files from local system that were deleted on S3.&quot;&quot;&quot;</span>
+        <span class="n">mine</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mod_mine</span><span class="p">,</span> <span class="n">mod_other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dfs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="p">)</span>
+
+        <span class="c1"># Load in files deleted from S3, and select only those that ARE on our local system and AREN&#39;T on AWS</span>
+        <span class="n">deleted_remote</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_lPath</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">deleted_remote</span> <span class="o">=</span> <span class="n">deleted_remote</span><span class="p">[</span><span class="n">deleted_remote</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
+            <span class="n">mine</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">])]</span>
+        <span class="n">deleted_remote</span> <span class="o">=</span> <span class="n">deleted_remote</span><span class="p">[</span><span class="o">~</span><span class="n">deleted_remote</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
+            <span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">])]</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">deleted_remote</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DOWNLOAD: Would you like to delete these files from your computer that were deleted on S3?:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;(&#39;file name&#39; / &#39;Date last modified locally&#39;)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">to_delete_Paths</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Paths</span><span class="p">()</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">deleted_remote</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+
+                <span class="n">lPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="o">.</span><span class="n">join_Path</span><span class="p">(</span> <span class="n">path</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="p">)</span>
+                <span class="n">to_delete_Paths</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span> <span class="n">lPath</span> <span class="p">)</span>
+
+                <span class="n">mask</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="o">==</span> <span class="n">mine</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">],</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">mine</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mask</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="n">selected_deleted_Paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_selected_indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_delete_from_local</span><span class="p">,</span> <span class="n">to_delete_Paths</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Done.</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_push_new_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Upload files to S3 that were created locally.&quot;&quot;&quot;</span>
+        <span class="n">mine</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mod_mine</span><span class="p">,</span> <span class="n">mod_other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dfs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="p">)</span>
+
+        <span class="c1"># Find files that are in our directory but not AWS, and load in files deleted from AWS</span>
+        <span class="n">new_local</span> <span class="o">=</span> <span class="n">mine</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">mine</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
+            <span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">])]</span>
+        <span class="n">deletedfiles</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_remote_delete_lPath</span><span class="o">.</span><span class="n">path</span><span class="p">)[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new_local</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;UPLOAD: Would you like to upload these new files to S3 that were created locally?:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;(&#39;file name&#39; / &#39;Date last modified Locally&#39;)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="n">to_add_Paths</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Paths</span><span class="p">()</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">new_local</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                
+                <span class="n">lPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="o">.</span><span class="n">join_Path</span><span class="p">(</span> <span class="n">path</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="p">)</span>
+                <span class="n">to_add_Paths</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span> <span class="n">lPath</span> <span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">],</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_colname</span><span class="p">],</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="ow">in</span> <span class="n">deletedfiles</span><span class="p">):</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*DELETED ON S3&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">()</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+
+            <span class="n">selected_added_Paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_selected_indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_upload_to_remote</span><span class="p">,</span> <span class="n">to_add_Paths</span><span class="p">)</span>
+            <span class="n">added_rel_paths</span> <span class="o">=</span> <span class="n">selected_added_Paths</span><span class="o">.</span><span class="n">get_rels</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span> <span class="p">)</span><span class="o">.</span><span class="n">export_strings</span><span class="p">()</span>
+
+            <span class="n">added_to_s3</span> <span class="o">=</span> <span class="n">mine</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mine</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">added_rel_paths</span><span class="p">)]</span>
+            <span class="n">newversions</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">other</span><span class="p">,</span> <span class="n">added_to_s3</span><span class="p">])</span>
+
+            <span class="n">newversions</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_lPath</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_pull_new_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download files from S3 that were created recently.&quot;&quot;&quot;</span>
+        <span class="n">mine</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mod_mine</span><span class="p">,</span> <span class="n">mod_other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dfs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="p">)</span>
+
+        <span class="c1"># Find files that are on S3 but not our local system and read in files we have deleted locally</span>
+        <span class="n">news3</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span>
+            <span class="n">mine</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">])]</span>
+        <span class="n">deletedfiles</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_local_delete_lPath</span><span class="o">.</span><span class="n">path</span><span class="p">)[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">news3</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DOWNLOAD: Would you like to download these new files that were created on S3?:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;(&#39;file name&#39; / &#39;Date last modified on S3&#39;)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            
+            <span class="n">to_download_Paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PATHS_CLASS</span><span class="p">()</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">news3</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+                
+                <span class="n">rPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_rDir</span><span class="o">.</span><span class="n">join_Path</span><span class="p">(</span> <span class="n">path</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="p">)</span>
+                <span class="n">to_download_Paths</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span> <span class="n">rPath</span> <span class="p">)</span>
+
+                <span class="nb">print</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">],</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_colname</span><span class="p">],</span>
+                      <span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> by&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_editor_colname</span><span class="p">],</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="ow">in</span> <span class="n">deletedfiles</span><span class="p">):</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*DELETED LOCALLY&quot;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">()</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="n">selected_downloaded_Paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_selected_indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_download_from_remote</span><span class="p">,</span> <span class="n">to_download_Paths</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_push_modified_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update files on S3 with modifications that were made locally more recently.&quot;&quot;&quot;</span>
+        <span class="n">mine</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mod_mine</span><span class="p">,</span> <span class="n">mod_other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dfs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="p">)</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mod_mine</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;UPLOAD: Would you like to update these files on S3 with your local changes?:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;(&#39;file name&#39; / &#39;Date last modified locally&#39; / &#39;Date last modified on S3&#39;)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_push_sequence</span><span class="p">(</span><span class="n">mod_mine</span><span class="p">,</span> <span class="n">mine</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_pull_modified_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update local files with modifications that were made on S3 more recently.&quot;&quot;&quot;</span>
+        <span class="n">mine</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mod_mine</span><span class="p">,</span> <span class="n">mod_other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dfs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="p">)</span>
+
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mod_other</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DOWNLOAD: Would you like to update these local files with the changes from S3?:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;(&#39;file name&#39; / &#39;Date last modified locally&#39; / &#39;Date last modified on S3&#39;)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pull_sequence</span><span class="p">(</span><span class="n">mod_other</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_revert_modified_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Revert remote files with modifications that were made locally less recently.&quot;&quot;&quot;</span>
+
+        <span class="n">mine</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mod_mine</span><span class="p">,</span> <span class="n">mod_other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dfs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mod_other</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;UPLOAD: Would you like to revert these files on S3 back to your local versions?:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;(&#39;file name&#39; / &#39;Date last modified locally&#39; / &#39;Date last modified on S3&#39;)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_push_sequence</span><span class="p">(</span><span class="n">mod_other</span><span class="p">,</span> <span class="n">mine</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_revert_modified_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Revert local files with modifications that were made on S3 less recently.&quot;&quot;&quot;</span>
+        <span class="n">mine</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mod_mine</span><span class="p">,</span> <span class="n">mod_other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_dfs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mod_mine</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DOWNLOAD: Would you like to revert these local files back to the versions on S3?:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;(&#39;file name&#39; / &#39;Date last modified locally&#39; / &#39;Date last modified on S3&#39;)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pull_sequence</span><span class="p">(</span><span class="n">mod_mine</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_compute_dfs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lDir</span> <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a list of dfs containing all the information for smart_sync.&quot;&quot;&quot;</span>
+        
+        <span class="n">mine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_directory</span><span class="p">(</span> <span class="n">lDir</span> <span class="p">)</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_lPath</span><span class="o">.</span><span class="n">path</span> <span class="p">)</span>
+
+        <span class="n">mine</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_ignore</span><span class="p">(</span> <span class="n">mine</span> <span class="p">)</span>
+        <span class="n">other</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_ignore</span><span class="p">(</span> <span class="n">other</span> <span class="p">)</span>
+
+        <span class="n">inboth</span> <span class="o">=</span> <span class="n">mine</span><span class="p">[</span> <span class="n">mine</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span> <span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">])</span> <span class="p">]</span>
+
+        <span class="n">mod_mine</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Files more recently modified Locally</span>
+        <span class="n">mod_other</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># Files more recently modified on S3</span>
+
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">inboth</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]:</span>
+            <span class="n">mycs</span> <span class="o">=</span> <span class="n">inboth</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">inboth</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="o">==</span> <span class="n">file</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_hash_colname</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">othercs</span> <span class="o">=</span> <span class="n">other</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="o">==</span> <span class="n">file</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_hash_colname</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="k">if</span><span class="p">(</span><span class="n">mycs</span> <span class="o">!=</span> <span class="n">othercs</span><span class="p">):</span> <span class="c1"># users have pushed conflicting file check sums</span>
+
+                <span class="n">datemine</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span>
+                    <span class="n">mine</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mine</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="o">==</span> <span class="n">file</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_colname</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dttm_format</span><span class="p">)</span>
+                <span class="n">dateother</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span>
+                    <span class="n">other</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="o">==</span> <span class="n">file</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_time_colname</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dttm_format</span><span class="p">)</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">datemine</span> <span class="o">&gt;</span> <span class="n">dateother</span><span class="p">):</span>
+                    <span class="n">mod_mine</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">file</span><span class="p">,</span> <span class="n">datemine</span><span class="p">,</span> <span class="n">dateother</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">mod_other</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">file</span><span class="p">,</span> <span class="n">datemine</span><span class="p">,</span> <span class="n">dateother</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">mine</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">mod_mine</span><span class="p">,</span> <span class="n">mod_other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_compute_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lDir</span><span class="p">,</span> <span class="n">ignore_util</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a dataframe describing all files in a local directory.&quot;&quot;&quot;</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+        <span class="n">folders_to_skip</span> <span class="o">=</span> <span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">UTIL_DIR</span> <span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore_util</span><span class="p">:</span>
+            <span class="n">folders_to_skip</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">Paths_inst</span> <span class="o">=</span> <span class="n">lDir</span><span class="o">.</span><span class="n">walk_contents_Paths</span><span class="p">(</span> <span class="n">block_dirs</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">block_paths</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">folders_to_skip</span> <span class="o">=</span> <span class="n">folders_to_skip</span> <span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">Path_inst</span> <span class="ow">in</span> <span class="n">Paths_inst</span><span class="p">:</span>
+
+            <span class="n">df_new</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span> <span class="n">columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="p">)</span>
+            <span class="n">df_new</span><span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span> <span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">Path_inst</span><span class="o">.</span><span class="n">get_rel</span><span class="p">(</span> <span class="n">lDir</span> <span class="p">)</span><span class="o">.</span><span class="n">path</span>  <span class="p">]</span>
+            <span class="n">df_new</span><span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_colname</span> <span class="p">]</span> <span class="o">=</span> <span class="n">Path_inst</span><span class="o">.</span><span class="n">get_mtime</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">dttm_format</span> <span class="p">)</span>
+            <span class="n">df_new</span><span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash_colname</span> <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hash</span><span class="p">(</span> <span class="n">Path_inst</span><span class="o">.</span><span class="n">path</span> <span class="p">)</span>
+            <span class="n">df_new</span><span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">_editor_colname</span> <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Connection</span><span class="o">.</span><span class="n">cfg</span><span class="p">[</span><span class="s1">&#39;_name&#39;</span><span class="p">]</span>
+
+            <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span> <span class="n">df_new</span><span class="p">],</span> <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">df</span>
+
+    <span class="k">def</span> <span class="nf">_filter_ignore</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span> <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove all files that should be ignored as requested by the user.&quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span> <span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ignore</span> <span class="p">)</span> <span class="p">]</span>      
+
+    <span class="nd">@data_function</span>
+    <span class="k">def</span> <span class="nf">_upload_to_remote</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">lPath</span> <span class="p">):</span>
+
+        <span class="n">rel_lPath</span> <span class="o">=</span> <span class="n">lPath</span><span class="o">.</span><span class="n">get_rel</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span> <span class="p">)</span>
+        <span class="n">rPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_rDir</span><span class="o">.</span><span class="n">join_Path</span><span class="p">(</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">rel_lPath</span> <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">rPath</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span> <span class="n">Destination</span> <span class="o">=</span> <span class="n">lPath</span><span class="p">,</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">print_off</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+
+    <span class="nd">@data_function</span>
+    <span class="k">def</span> <span class="nf">_download_from_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rPath</span><span class="p">):</span>
+
+        <span class="n">rel_rPath</span> <span class="o">=</span> <span class="n">rPath</span><span class="o">.</span><span class="n">get_rel</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_rDir</span> <span class="p">)</span>
+        <span class="n">lPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="o">.</span><span class="n">join_Path</span><span class="p">(</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">rel_rPath</span> <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="n">rPath</span><span class="o">.</span><span class="n">download</span><span class="p">(</span> <span class="n">Destination</span> <span class="o">=</span> <span class="n">lPath</span><span class="p">,</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">print_off</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+
+    <span class="nd">@data_function</span>
+    <span class="k">def</span> <span class="nf">_delete_from_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rPath</span><span class="p">):</span>
+
+        <span class="n">rel_rPath</span> <span class="o">=</span> <span class="n">rPath</span><span class="o">.</span><span class="n">get_rel</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_rDir</span> <span class="p">)</span> 
+        <span class="n">deleted_rPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_util_deleted_rDir</span><span class="o">.</span><span class="n">join_Path</span><span class="p">(</span> <span class="n">Path</span> <span class="o">=</span> <span class="n">rel_rPath</span> <span class="p">)</span>
+
+        <span class="c1"># make a copy of the deleted file into the deleted folder in the util section</span>
+        <span class="k">if</span> <span class="n">rPath</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span> <span class="n">Destination</span> <span class="o">=</span> <span class="n">deleted_rPath</span><span class="p">,</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">):</span>
+            <span class="k">return</span> <span class="n">rPath</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">print_off</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nd">@data_function</span>
+    <span class="k">def</span> <span class="nf">_delete_from_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lPath</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="n">lPath</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">print_off</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_apply_selected_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_function</span><span class="p">,</span> <span class="n">Paths_inst</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prompt the user to select certain files to perform a synchronization function on.&quot;&quot;&quot;</span>
+
+        <span class="n">indices</span> <span class="o">=</span> <span class="n">ps</span><span class="o">.</span><span class="n">get_user_selection_for_list_items</span><span class="p">(</span> <span class="n">Paths_inst</span><span class="o">.</span><span class="n">export_strings</span><span class="p">(),</span> <span class="n">print_off</span><span class="o">=</span><span class="kc">False</span> <span class="p">)</span>
+
+        <span class="n">all_indices</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Paths_inst</span><span class="p">)))</span>
+        <span class="n">inds_not_selected</span> <span class="o">=</span> <span class="p">[</span> <span class="n">ind</span> <span class="k">for</span> <span class="n">ind</span> <span class="ow">in</span> <span class="n">all_indices</span> <span class="k">if</span> <span class="n">ind</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">indices</span> <span class="p">]</span>
+
+        <span class="n">Paths_inst</span><span class="o">.</span><span class="n">_remove_inds</span><span class="p">(</span> <span class="n">inds_not_selected</span> <span class="p">)</span>
+            
+        <span class="n">successful_Paths</span> <span class="o">=</span> <span class="n">data_function</span><span class="p">(</span> <span class="n">Paths_inst</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="n">successful_Paths</span>
+
+    <span class="k">def</span> <span class="nf">_push_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">listfiles</span><span class="p">,</span> <span class="n">mine</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;User-prompted uploading of files from a dataframe.&quot;&quot;&quot;</span>
+        
+        <span class="n">to_push_Paths</span> <span class="o">=</span> <span class="n">do</span><span class="o">.</span><span class="n">Paths</span><span class="p">()</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">listfiles</span><span class="p">:</span>
+            
+            <span class="n">lPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span><span class="o">.</span><span class="n">join_Path</span><span class="p">(</span> <span class="n">path</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">)</span>
+            <span class="n">to_push_Paths</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span> <span class="n">lPath</span> <span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">file</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">file</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">file</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> by&quot;</span><span class="p">,</span>
+                  <span class="n">other</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="o">==</span> <span class="n">file</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="bp">self</span><span class="o">.</span><span class="n">_editor_colname</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">selected_push_Paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_selected_indices</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">_upload_to_remote</span><span class="p">,</span> <span class="n">to_push_Paths</span> <span class="p">)</span>
+        <span class="n">push_rel_paths</span> <span class="o">=</span> <span class="n">selected_push_Paths</span><span class="o">.</span><span class="n">get_rels</span><span class="p">(</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_lDir</span> <span class="p">)</span><span class="o">.</span><span class="n">export_strings</span><span class="p">()</span>
+
+        <span class="n">updatedins3</span> <span class="o">=</span> <span class="n">mine</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">mine</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">push_rel_paths</span><span class="p">)]</span>
+        <span class="n">newversions</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">other</span><span class="p">,</span> <span class="n">updatedins3</span><span class="p">])</span>
+        <span class="n">newversions</span> <span class="o">=</span> <span class="n">newversions</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">],</span> <span class="n">keep</span><span class="o">=</span><span class="s2">&quot;last&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        <span class="n">newversions</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_remote_versions_lPath</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+ 
+    <span class="k">def</span> <span class="nf">_pull_sequence</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">listfiles</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;User-prompted downloading of files from a dataframe.&quot;&quot;&quot;</span>
+
+        <span class="n">to_pull_Paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PATHS_CLASS</span><span class="p">()</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">listfiles</span><span class="p">:</span>
+            
+            <span class="n">rPath</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_rDir</span><span class="o">.</span><span class="n">join_Path</span><span class="p">(</span> <span class="n">path</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">)</span>
+            <span class="n">to_pull_Paths</span><span class="o">.</span><span class="n">_add</span><span class="p">(</span> <span class="n">rPath</span> <span class="p">)</span>
+
+            <span class="nb">print</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">file</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">file</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">file</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="s2">&quot;</span><span class="se">\t</span><span class="s2"> by&quot;</span><span class="p">,</span>
+                  <span class="n">other</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">other</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_colname</span><span class="p">]</span> <span class="o">==</span> <span class="n">file</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="bp">self</span><span class="o">.</span><span class="n">_editor_colname</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">selected_pull_Paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_selected_indices</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_download_from_remote</span><span class="p">,</span> <span class="n">to_pull_Paths</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="BasePlatform.reset_confirm"><a class="viewcode-back" href="../../kabbes_s3synchrony.html#kabbes_s3synchrony.BasePlatform.BasePlatform.reset_confirm">[docs]</a>    <span class="k">def</span> <span class="nf">reset_confirm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prompt the user to confirm whether a reset can occur.&quot;&quot;&quot;</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Are you sure you would like to reset the remote data directory?&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;This will not change any of your file contents, but will delete the entire&#39;</span><span class="p">)</span>
+        <span class="n">confirm</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">UTIL_DIR</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39; folder on your local computer and on your AWS prefix: &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">aws_prfx</span> <span class="o">+</span> <span class="s1">&#39; (y/n): &#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">confirm</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Reset aborted.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reset_approved</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reset_approved</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reset_approved</span></div>
+
+<div class="viewcode-block" id="BasePlatform.reset_local"><a class="viewcode-back" href="../../kabbes_s3synchrony.html#kabbes_s3synchrony.BasePlatform.BasePlatform.reset_local">[docs]</a>    <span class="k">def</span> <span class="nf">reset_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove all modifications made locally by synchronization.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reset_approved</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_util_lDir</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cannot reset local -- user has not approved.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BasePlatform.reset_remote"><a class="viewcode-back" href="../../kabbes_s3synchrony.html#kabbes_s3synchrony.BasePlatform.BasePlatform.reset_remote">[docs]</a>    <span class="k">def</span> <span class="nf">reset_remote</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove all modifications made to the remote repo by synchronization.&quot;&quot;&quot;</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reset_approved</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_util_rDir</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span> <span class="n">override</span> <span class="o">=</span> <span class="kc">True</span> <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Cannot reset remote -- user has not approved.&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_randomized_dirname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate a random string to be used as a file name.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="nb">bytes</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">dt</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()),</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_hash</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a unique checksum based on a file&#39;s contents.&quot;&quot;&quot;</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, James Kabbes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

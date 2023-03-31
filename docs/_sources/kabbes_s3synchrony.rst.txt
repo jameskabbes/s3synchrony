@@ -1,0 +1,46 @@
+kabbes\_s3synchrony package
+===========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   kabbes_s3synchrony.Platforms
+   kabbes_s3synchrony.Templates
+
+Submodules
+----------
+
+kabbes\_s3synchrony.BasePlatform module
+---------------------------------------
+
+.. automodule:: kabbes_s3synchrony.BasePlatform
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+kabbes\_s3synchrony.Client module
+---------------------------------
+
+.. automodule:: kabbes_s3synchrony.Client
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+kabbes\_s3synchrony.Connection module
+-------------------------------------
+
+.. automodule:: kabbes_s3synchrony.Connection
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: kabbes_s3synchrony
+   :members:
+   :undoc-members:
+   :show-inheritance:
